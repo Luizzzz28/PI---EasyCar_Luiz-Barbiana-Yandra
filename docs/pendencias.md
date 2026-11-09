@@ -24,6 +24,6 @@ Esses pontos não são da camada de banco, mas vão gerar **erro 500** quando us
 | 3 | `locadora/serializers.py` (`CarroSerializer`) | Falta o campo `marca` (obrigatório no banco). Criar carro pela API falha |
 | 4 | `locadora/views.py` (`MultaViewSet`) | O `funcionario` vem do corpo da requisição; deveria ser o usuário logado |
 | 5 | `locadora/services.py` (`devolver_carro`) | Não trava o aluguel. Com o repositório, `alugueis.finalizar()` já resolve isso |
-| 6 | `README.md` | Vazio: apontar para `docs/` |
+| 6 | ~~`README.md`~~ | ~~Vazio~~ **feito nesta branch** |
 | 7 | `config/settings.py` | Depois do HTTPS: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` |
 | 8 | Testes da API | Nenhuma view tem teste ainda |
