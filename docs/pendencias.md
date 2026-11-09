@@ -1,0 +1,29 @@
+# Pendências
+
+## Banco de dados (escopo desta branch)
+
+| # | Pendência | Prioridade |
+|---|---|---|
+| 1 | Ligar os `services.py` aos repositórios (hoje ainda usam o ORM) | alta |
+| 2 | Testes dos services (carro indisponível, devolução dupla, multa em aluguel finalizado) | alta |
+| 3 | Definir se o "sem ORM" vale também para a criação das tabelas. Se sim, trocar os `models.py` por migrations `RunSQL` (SQL escrito à mão) | média, decidir com o professor/time |
+| 4 | Comando de *seed* (`python manage.py popular_banco`) com carros/clientes de exemplo para apresentação. A pasta `locadora/management/commands/` já existe e está vazia | média |
+| 5 | Índices para consultas frequentes (`locadora_carro(status)`, `locadora_aluguel(status)`) | baixa |
+| 6 | Guardar dinheiro como inteiro em centavos, se quiserem evitar `numeric` no SQLite | baixa |
+| 7 | Adicionar as novas variáveis (`DB_ENGINE`, `POSTGRES_*`, `DJANGO_ALLOWED_HOSTS`) no `.env.example` | baixa |
+| 8 | Configurar backup automático no servidor de produção | quando houver servidor |
+
+## Encontrado em outras partes do código (avisar o time)
+
+Esses pontos não são da camada de banco, mas vão gerar **erro 500** quando usados:
+
+| # | Arquivo | Problema |
+|---|---|---|
+| 1 | `locadora/serializers.py` (`MultaSerializer`) | Usa o campo `descricao`, mas o model chama `motivo`. As rotas de multas quebram |
+| 2 | `locadora/services.py` (`registrar_multa`) | Também usa `descricao` e não preenche `dias_atrasos` (campo obrigatório) |
+| 3 | `locadora/serializers.py` (`CarroSerializer`) | Falta o campo `marca` (obrigatório no banco). Criar carro pela API falha |
+| 4 | `locadora/views.py` (`MultaViewSet`) | O `funcionario` vem do corpo da requisição; deveria ser o usuário logado |
+| 5 | `locadora/services.py` (`devolver_carro`) | Não trava o aluguel. Com o repositório, `alugueis.finalizar()` já resolve isso |
+| 6 | `README.md` | Vazio: apontar para `docs/` |
+| 7 | `config/settings.py` | Depois do HTTPS: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` |
+| 8 | Testes da API | Nenhuma view tem teste ainda |
