@@ -1,0 +1,5 @@
+#Dependências para o projeto Django
+Django>=5.2,<6
+djangorestframework>=3.15 #Framework do Django para criação de APIs REST
+drf-spectacular>=0.28 #Biblioteca para geração automática de documentação OpenAPI para APIs REST do Django
+python-dotenv>=1.0 #... para carregar e ler variáveis de ambiente a partir de arquivos .env
