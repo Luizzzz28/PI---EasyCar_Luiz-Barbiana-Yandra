@@ -8,4 +8,6 @@ Cada módulo cuida de UMA tabela:
 - ``multas``   -> locadora_multa
 
 Services chamam os repositórios; views nunca escrevem SQL.
+
+Desenvolvido com orientação do Prof. Henry (ver docs/padroes-de-codigo.md).
 """

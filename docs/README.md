@@ -53,6 +53,11 @@ Todas fixadas em `requirements.txt` / `requirements-dev.txt` (versões estáveis
 > Por que Django 5.2 e não 6.x? A 5.2 é **LTS** (Long Term Support): recebe correções
 > de segurança por mais tempo e todas as bibliotecas do projeto já a suportam.
 
+## Créditos
+
+Camada de banco de dados, Docker, CI/CD e esta documentação foram feitos com
+orientação do **Prof. Henry**.
+
 ## Começo rápido
 
 ```bash

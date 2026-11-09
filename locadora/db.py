@@ -9,6 +9,9 @@ Usa a conexão que o Django já abre, que funciona igual em SQLite e PostgreSQL:
 Regra de ouro: NUNCA monte SQL com f-string/concatenação de VALORES vindos do
 usuário. Valores vão sempre em ``params``. F-string só para nomes fixos do código
 (tabela, colunas), nunca para dados.
+
+Camada de banco desenvolvida com orientação do Prof. Henry.
+Documentação: docs/banco-de-testes.md e docs/banco-de-producao.md
 """
 
 from __future__ import annotations

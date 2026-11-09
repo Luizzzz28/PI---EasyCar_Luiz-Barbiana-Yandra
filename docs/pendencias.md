@@ -6,7 +6,7 @@
 |---|---|---|
 | 1 | Ligar os `services.py` aos repositórios (hoje ainda usam o ORM) | alta |
 | 2 | Testes dos services (carro indisponível, devolução dupla, multa em aluguel finalizado) | alta |
-| 3 | Definir se o "sem ORM" vale também para a criação das tabelas. Se sim, trocar os `models.py` por migrations `RunSQL` (SQL escrito à mão) | média, decidir com o professor/time |
+| 3 | Confirmar com o professor se o projeto deve ser **sem ORM**. A estrutura atual funciona dos dois jeitos: os `models.py` (ORM) continuam e as tabelas são as mesmas; os repositórios (SQL puro) já estão prontos e testados. **Se for sem ORM:** ligar services/views aos repositórios e trocar os `models.py` por migrations `RunSQL`. **Se ORM for permitido:** os repositórios podem ser usados só nas consultas mais complexas, ou removidos | alta, decidir com o professor/time |
 | 4 | Comando de *seed* (`python manage.py popular_banco`) com carros/clientes de exemplo para apresentação. A pasta `locadora/management/commands/` já existe e está vazia | média |
 | 5 | Índices para consultas frequentes (`locadora_carro(status)`, `locadora_aluguel(status)`) | baixa |
 | 6 | Guardar dinheiro como inteiro em centavos, se quiserem evitar `numeric` no SQLite | baixa |
