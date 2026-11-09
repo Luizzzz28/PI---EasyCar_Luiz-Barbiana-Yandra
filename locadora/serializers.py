@@ -152,5 +152,5 @@ class AluguelDetalhadoSerializer(AluguelSerializer):
 class MultaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Multa
-        fields = ['id', 'aluguel', 'funcionario', 'valor', 'descricao', 
+        fields = ['id', 'aluguel', 'funcionario', 'valor', 'motivo', 
                   'data_infracao', 'status', 'dias_atrasos', 'data_pagamento']
