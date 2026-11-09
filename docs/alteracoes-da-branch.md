@@ -70,7 +70,8 @@ Adicionados `staticfiles/`, `.pytest_cache/`, `.coverage`, `htmlcov/`.
 
 - `models.py`, `migrations/`: as tabelas continuam as mesmas. Os repositórios leem e
   escrevem nas tabelas que já existem (`locadora_carro`, `locadora_aluguel`...).
-- `views.py`, `serializers.py`, `services.py`, `admin.py`, `permissions.py`, `urls.py`:
+- `serializers.py`: só uma correção, `'descricao'` → `'motivo'` no `MultaSerializer` (o campo não existia no model e quebrava o CI e o Swagger).
+- `views.py`, `services.py`, `admin.py`, `permissions.py`, `urls.py`:
   continuam como estavam. Dá para migrá-los para os repositórios aos poucos, uma view
   por vez (ver [pendencias.md](pendencias.md)).
 - `.env.example`: mantido. As novas variáveis estão documentadas em
@@ -84,7 +85,8 @@ Adicionados `staticfiles/`, `.pytest_cache/`, `.coverage`, `htmlcov/`.
 | `pytest` no SQLite | 35 passando |
 | `pytest` no PostgreSQL 17 | 35 passando |
 | `manage.py makemigrations --check` | nenhuma migration pendente |
-| `manage.py check --deploy` | só avisos de HTTPS (ver pendências) |
+| `manage.py check --deploy` | sem erros, só avisos de HTTPS (ver pendências) |
+| GitHub Actions (PR #1) | lint, testes SQLite, testes PostgreSQL e build Docker |
 | `docker compose up --build` | API 200, estáticos 200, rota protegida 401 |
 
 ## Impacto para o time

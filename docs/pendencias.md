@@ -19,7 +19,7 @@ Esses pontos não são da camada de banco, mas vão gerar **erro 500** quando us
 
 | # | Arquivo | Problema |
 |---|---|---|
-| 1 | `locadora/serializers.py` (`MultaSerializer`) | Usa o campo `descricao`, mas o model chama `motivo`. As rotas de multas quebram |
+| 1 | ~~`locadora/serializers.py` (`MultaSerializer`)~~ | ~~Usava `descricao` em vez de `motivo`~~ **corrigido nesta branch** (o CI acusou) |
 | 2 | `locadora/services.py` (`registrar_multa`) | Também usa `descricao` e não preenche `dias_atrasos` (campo obrigatório) |
 | 3 | `locadora/serializers.py` (`CarroSerializer`) | Falta o campo `marca` (obrigatório no banco). Criar carro pela API falha |
 | 4 | `locadora/views.py` (`MultaViewSet`) | O `funcionario` vem do corpo da requisição; deveria ser o usuário logado |
