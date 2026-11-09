@@ -1,0 +1,6 @@
+#Arquivos e diretórios a serem ignorados pelo Git e não incluídos no repositório
+.venv/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
