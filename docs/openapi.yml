@@ -1,0 +1,1923 @@
+openapi: 3.0.3
+info:
+  title: API EasyCar
+  version: 1.0.0
+  description: 'Aluguel de carros: clientes, carros, aluguéis e multas, com acesso
+    por grupos.'
+paths:
+  /api/alugueis/:
+    get:
+      operationId: alugueis_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - alugueis
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAluguelList'
+          description: ''
+    post:
+      operationId: alugueis_create
+      tags:
+      - alugueis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluguel'
+          description: ''
+  /api/alugueis/{id}/:
+    get:
+      operationId: alugueis_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este aluguel.
+        required: true
+      tags:
+      - alugueis
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluguel'
+          description: ''
+    put:
+      operationId: alugueis_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este aluguel.
+        required: true
+      tags:
+      - alugueis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Aluguel'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluguel'
+          description: ''
+    patch:
+      operationId: alugueis_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este aluguel.
+        required: true
+      tags:
+      - alugueis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAluguel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAluguel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAluguel'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluguel'
+          description: ''
+    delete:
+      operationId: alugueis_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este aluguel.
+        required: true
+      tags:
+      - alugueis
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/alugueis/{id}/devolver/:
+    post:
+      operationId: alugueis_devolver_create
+      description: 'POST /alugueis/{id}/devolver/: finaliza o aluguel e libera o carro.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este aluguel.
+        required: true
+      tags:
+      - alugueis
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aluguel'
+          description: ''
+  /api/auth/token/:
+    post:
+      operationId: auth_token_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+  /api/carros/:
+    get:
+      operationId: carros_list
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - carros
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCarroList'
+          description: ''
+    post:
+      operationId: carros_create
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      tags:
+      - carros
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Carro'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Carro'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Carro'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carro'
+          description: ''
+  /api/carros/{id}/:
+    get:
+      operationId: carros_retrieve
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este carro.
+        required: true
+      tags:
+      - carros
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carro'
+          description: ''
+    put:
+      operationId: carros_update
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este carro.
+        required: true
+      tags:
+      - carros
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Carro'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Carro'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Carro'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carro'
+          description: ''
+    patch:
+      operationId: carros_partial_update
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este carro.
+        required: true
+      tags:
+      - carros
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCarro'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCarro'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCarro'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carro'
+          description: ''
+    delete:
+      operationId: carros_destroy
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este carro.
+        required: true
+      tags:
+      - carros
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/carros/{id}/alugueis/:
+    get:
+      operationId: carros_alugueis_retrieve
+      description: 'GET /carros/{id}/alugueis/: histórico de aluguéis do carro (B-C).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este carro.
+        required: true
+      tags:
+      - carros
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carro'
+          description: ''
+  /api/funcionarios/:
+    get:
+      operationId: funcionarios_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - funcionarios
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFuncionarioList'
+          description: ''
+  /api/funcionarios/{id}/:
+    get:
+      operationId: funcionarios_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - funcionarios
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Funcionario'
+          description: ''
+  /api/funcionarios/{id}/alugueis/:
+    get:
+      operationId: funcionarios_alugueis_retrieve
+      description: 'GET /funcionarios/{id}/alugueis/: aluguéis registrados por este
+        funcionário (1:N).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - funcionarios
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Funcionario'
+          description: ''
+  /api/me/:
+    get:
+      operationId: me_retrieve
+      description: 'GET /me/: o perfil do cliente autenticado.'
+      tags:
+      - me
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+  /api/me/alugueis/:
+    get:
+      operationId: me_alugueis_list
+      description: 'GET /me/alugueis/: só os aluguéis do cliente autenticado.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAluguelDetalhadoList'
+          description: ''
+  /api/me/carros/:
+    get:
+      operationId: me_carros_list
+      description: 'GET /me/carros/: carros que o cliente autenticado já alugou.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCarroList'
+          description: ''
+  /api/me/multas/:
+    get:
+      operationId: me_multas_list
+      description: 'GET /me/multas/: só as multas do cliente autenticado.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMultaList'
+          description: ''
+  /api/multas/:
+    get:
+      operationId: multas_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - multas
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMultaList'
+          description: ''
+    post:
+      operationId: multas_create
+      tags:
+      - multas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Multa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Multa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Multa'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Multa'
+          description: ''
+  /api/multas/{id}/:
+    get:
+      operationId: multas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este multa.
+        required: true
+      tags:
+      - multas
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Multa'
+          description: ''
+    put:
+      operationId: multas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este multa.
+        required: true
+      tags:
+      - multas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Multa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Multa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Multa'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Multa'
+          description: ''
+    patch:
+      operationId: multas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este multa.
+        required: true
+      tags:
+      - multas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMulta'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMulta'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMulta'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Multa'
+          description: ''
+    delete:
+      operationId: multas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este multa.
+        required: true
+      tags:
+      - multas
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/perfis-clientes/:
+    get:
+      operationId: perfis_clientes_list
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPerfilClienteList'
+          description: ''
+    post:
+      operationId: perfis_clientes_create
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      tags:
+      - perfis-clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+  /api/perfis-clientes/{id}/:
+    get:
+      operationId: perfis_clientes_retrieve
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+    put:
+      operationId: perfis_clientes_update
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+    patch:
+      operationId: perfis_clientes_partial_update
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+    delete:
+      operationId: perfis_clientes_destroy
+      description: Responde 409 em vez de erro 500 quando o registro tem aluguéis
+        (on_delete=PROTECT).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/perfis-clientes/{id}/alugueis/:
+    get:
+      operationId: perfis_clientes_alugueis_retrieve
+      description: 'GET /perfis-clientes/{id}/alugueis/: aluguéis do cliente, com
+        os dados do carro.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+  /api/perfis-clientes/{id}/carros/:
+    get:
+      operationId: perfis_clientes_carros_list
+      description: 'GET /perfis-clientes/{id}/carros/: carros que o cliente já alugou
+        (A-B).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCarroList'
+          description: ''
+  /api/perfis-clientes/{id}/carros/{carro_id}/alugueis/:
+    get:
+      operationId: perfis_clientes_carros_alugueis_retrieve
+      description: 'GET /perfis-clientes/{id}/carros/{carro_id}/alugueis/: aluguéis
+        deste cliente com este carro (A-B-C).'
+      parameters:
+      - in: path
+        name: carro_id
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este perfil de cliente.
+        required: true
+      tags:
+      - perfis-clientes
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Um número de página dentro do conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - users
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: users_create
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - users
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_update
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: users_destroy
+      description: CRUD de usuários do grupo Clientes. Funcionários são criados só
+        pelo admin.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Um valor inteiro único que identifica este usuário.
+        required: true
+      tags:
+      - users
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Aluguel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        perfil_cliente:
+          type: integer
+        cliente:
+          type: string
+          readOnly: true
+        carro:
+          type: integer
+        placa:
+          type: string
+          readOnly: true
+        funcionario:
+          type: string
+          readOnly: true
+        data_inicio:
+          type: string
+          format: date
+          title: Data de início
+        data_fim:
+          type: string
+          format: date
+          title: Data de fim prevista
+        valor:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusAluguelEnum'
+          readOnly: true
+        data_devolucao:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+          title: Data de devolução
+      required:
+      - carro
+      - cliente
+      - data_devolucao
+      - data_fim
+      - data_inicio
+      - funcionario
+      - id
+      - perfil_cliente
+      - placa
+      - status
+      - valor
+    AluguelDetalhado:
+      type: object
+      description: Aluguel com os dados completos do carro (rotas de relacionamento).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        perfil_cliente:
+          type: integer
+        cliente:
+          type: string
+          readOnly: true
+        carro:
+          allOf:
+          - $ref: '#/components/schemas/Carro'
+          readOnly: true
+        placa:
+          type: string
+          readOnly: true
+        funcionario:
+          type: string
+          readOnly: true
+        data_inicio:
+          type: string
+          format: date
+          title: Data de início
+        data_fim:
+          type: string
+          format: date
+          title: Data de fim prevista
+        valor:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusAluguelEnum'
+          readOnly: true
+        data_devolucao:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+          title: Data de devolução
+      required:
+      - carro
+      - cliente
+      - data_devolucao
+      - data_fim
+      - data_inicio
+      - funcionario
+      - id
+      - perfil_cliente
+      - placa
+      - status
+      - valor
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          title: Nome de usuário
+        password:
+          type: string
+          writeOnly: true
+          title: Senha
+        token:
+          type: string
+          readOnly: true
+      required:
+      - password
+      - token
+      - username
+    Carro:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        modelo:
+          type: string
+          maxLength: 100
+        placa:
+          type: string
+          maxLength: 10
+        ano:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/StatusCarroEnum'
+      required:
+      - ano
+      - id
+      - modelo
+      - placa
+    Funcionario:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          title: Primeiro nome
+          maxLength: 150
+        last_name:
+          type: string
+          title: Último nome
+          maxLength: 150
+        email:
+          title: Endereço de email
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+      required:
+      - id
+      - username
+    Multa:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        aluguel:
+          type: integer
+        funcionario:
+          type: integer
+        valor:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          title: Motivo da multa
+          maxLength: 500
+        data_infracao:
+          type: string
+          format: date
+          title: Data da infração
+        status:
+          $ref: '#/components/schemas/MultaStatusEnum'
+        dias_atrasos:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          title: Qtd de dias atrasados
+        data_pagamento:
+          type: string
+          format: date
+          nullable: true
+          title: Data de pagamento
+      required:
+      - aluguel
+      - data_infracao
+      - dias_atrasos
+      - funcionario
+      - id
+      - motivo
+      - valor
+    MultaStatusEnum:
+      enum:
+      - pendente
+      - pago
+      - abonado
+      type: string
+      description: |-
+        * `pendente` - Pendente
+        * `pago` - Pago
+        * `abonado` - Abonado
+    PaginatedAluguelDetalhadoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AluguelDetalhado'
+    PaginatedAluguelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Aluguel'
+    PaginatedCarroList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Carro'
+    PaginatedFuncionarioList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Funcionario'
+    PaginatedMultaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Multa'
+    PaginatedPerfilClienteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerfilCliente'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PatchedAluguel:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        perfil_cliente:
+          type: integer
+        cliente:
+          type: string
+          readOnly: true
+        carro:
+          type: integer
+        placa:
+          type: string
+          readOnly: true
+        funcionario:
+          type: string
+          readOnly: true
+        data_inicio:
+          type: string
+          format: date
+          title: Data de início
+        data_fim:
+          type: string
+          format: date
+          title: Data de fim prevista
+        valor:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusAluguelEnum'
+          readOnly: true
+        data_devolucao:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+          title: Data de devolução
+    PatchedCarro:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        modelo:
+          type: string
+          maxLength: 100
+        placa:
+          type: string
+          maxLength: 10
+        ano:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        status:
+          $ref: '#/components/schemas/StatusCarroEnum'
+    PatchedMulta:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        aluguel:
+          type: integer
+        funcionario:
+          type: integer
+        valor:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        motivo:
+          type: string
+          title: Motivo da multa
+          maxLength: 500
+        data_infracao:
+          type: string
+          format: date
+          title: Data da infração
+        status:
+          $ref: '#/components/schemas/MultaStatusEnum'
+        dias_atrasos:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 1
+          format: int64
+          title: Qtd de dias atrasados
+        data_pagamento:
+          type: string
+          format: date
+          nullable: true
+          title: Data de pagamento
+    PatchedPerfilCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        username:
+          type: string
+          readOnly: true
+        nome:
+          type: string
+          readOnly: true
+        cnh:
+          type: string
+          maxLength: 20
+        telefone:
+          type: string
+          maxLength: 20
+        endereco:
+          type: string
+          title: Endereço
+          maxLength: 255
+    PatchedUser:
+      type: object
+      description: Usuários criados pela API entram sempre no grupo Clientes.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Endereço de email
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          title: Primeiro nome
+          maxLength: 150
+        last_name:
+          type: string
+          title: Último nome
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          title: Senha
+          maxLength: 128
+        grupos:
+          type: array
+          items:
+            type: string
+            title: Nome
+          readOnly: true
+    PerfilCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        username:
+          type: string
+          readOnly: true
+        nome:
+          type: string
+          readOnly: true
+        cnh:
+          type: string
+          maxLength: 20
+        telefone:
+          type: string
+          maxLength: 20
+        endereco:
+          type: string
+          title: Endereço
+          maxLength: 255
+      required:
+      - cnh
+      - endereco
+      - id
+      - nome
+      - telefone
+      - user
+      - username
+    StatusAluguelEnum:
+      enum:
+      - ativo
+      - finalizado
+      type: string
+      description: |-
+        * `ativo` - Ativo
+        * `finalizado` - Finalizado
+    StatusCarroEnum:
+      enum:
+      - disponivel
+      - alugado
+      - manutencao
+      type: string
+      description: |-
+        * `disponivel` - Disponível
+        * `alugado` - Alugado
+        * `manutencao` - Em manutenção
+    User:
+      type: object
+      description: Usuários criados pela API entram sempre no grupo Clientes.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Usuário
+          description: Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_
+            apenas.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Endereço de email
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          title: Primeiro nome
+          maxLength: 150
+        last_name:
+          type: string
+          title: Último nome
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          title: Senha
+          maxLength: 128
+        grupos:
+          type: array
+          items:
+            type: string
+            title: Nome
+          readOnly: true
+      required:
+      - grupos
+      - id
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
