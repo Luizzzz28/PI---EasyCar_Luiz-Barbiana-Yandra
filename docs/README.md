@@ -12,7 +12,7 @@ Docker empacota a aplicação e quais padrões de código seguimos.
 | [banco-de-testes.md](banco-de-testes.md) | Banco de testes (SQLite), versões, como rodar e **o que cada teste verifica** |
 | [banco-de-producao.md](banco-de-producao.md) | Banco de produção (PostgreSQL), modelo de dados, transações, backup |
 | [ci-cd.md](ci-cd.md) | Pipeline do GitHub Actions: lint → testes (SQLite + PostgreSQL) → imagem Docker |
-| [padroes-de-codigo.md](padroes-de-codigo.md) | Arquitetura em camadas, SQL sem ORM, type hints, nomes, erros |
+| [padroes-de-codigo.md](padroes-de-codigo.md) | Arquitetura em camadas, boas práticas do ORM, type hints, nomes, erros |
 | [alteracoes-da-branch.md](alteracoes-da-branch.md) | O que mudou na branch `feature/banco-de-dados` e por quê |
 | [pendencias.md](pendencias.md) | O que ainda falta (do banco e de outras partes do projeto) |
 
@@ -21,15 +21,17 @@ Docker empacota a aplicação e quais padrões de código seguimos.
 ```mermaid
 flowchart LR
     Cliente["Cliente HTTP<br/>(navegador, app, Postman)"] --> API["API Django + DRF<br/>views / serializers"]
-    API --> Services["services.py<br/>regras de negócio"]
-    Services --> Repos["repositories/<br/>SQL puro"]
-    Repos --> DB["locadora/db.py<br/>conexão do Django"]
-    DB -->|DB_ENGINE=sqlite| SQLite[("SQLite<br/>dev e testes")]
-    DB -->|DB_ENGINE=postgres| PG[("PostgreSQL 17<br/>produção")]
+    API --> Services["services.py<br/>regras de negócio + transações"]
+    Services --> ORM["models.py<br/>ORM do Django"]
+    API --> ORM
+    ORM -->|"DB_ENGINE=sqlite"| SQLite[("SQLite<br/>dev e testes")]
+    ORM -->|"DB_ENGINE=postgres"| PG[("PostgreSQL 17<br/>produção")]
 ```
 
-O **mesmo código SQL** roda nos dois bancos. Quem escolhe qual banco usar é a
-variável de ambiente `DB_ENGINE`.
+O acesso ao banco é feito pelo **ORM do Django**: escrevemos Python
+(`Carro.objects.filter(...)`) e o Django gera o SQL certo para cada banco. Quem
+escolhe qual banco usar é a variável de ambiente `DB_ENGINE`. O código é o mesmo
+nos dois.
 
 ## Versões utilizadas
 
@@ -46,7 +48,7 @@ Todas fixadas em `requirements.txt` / `requirements-dev.txt` (versões estáveis
 | gunicorn | 26.2.0 | Servidor de produção |
 | whitenoise | 6.12.0 | Serve arquivos estáticos (admin, Swagger) |
 | PostgreSQL | 17 (imagem `postgres:17-alpine`) | Banco de produção |
-| SQLite | embutido no Python (≥ 3.35) | Banco de desenvolvimento/testes |
+| SQLite | embutido no Python | Banco de desenvolvimento/testes |
 | pytest / pytest-django / pytest-cov | 9.2.0 / 4.14.0 / 7.1.0 | Testes e cobertura |
 | ruff | 0.17.4 | Lint |
 

@@ -4,26 +4,20 @@
 
 | # | Pendência | Prioridade |
 |---|---|---|
-| 1 | Ligar os `services.py` aos repositórios (hoje ainda usam o ORM) | alta |
-| 2 | Testes dos services (carro indisponível, devolução dupla, multa em aluguel finalizado) | alta |
-| 3 | Confirmar com o professor se o projeto deve ser **sem ORM**. A estrutura atual funciona dos dois jeitos: os `models.py` (ORM) continuam e as tabelas são as mesmas; os repositórios (SQL puro) já estão prontos e testados. **Se for sem ORM:** ligar services/views aos repositórios e trocar os `models.py` por migrations `RunSQL`. **Se ORM for permitido:** os repositórios podem ser usados só nas consultas mais complexas, ou removidos | alta, decidir com o professor/time |
-| 4 | Comando de *seed* (`python manage.py popular_banco`) com carros/clientes de exemplo para apresentação. A pasta `locadora/management/commands/` já existe e está vazia | média |
-| 5 | Índices para consultas frequentes (`locadora_carro(status)`, `locadora_aluguel(status)`) | baixa |
-| 6 | Guardar dinheiro como inteiro em centavos, se quiserem evitar `numeric` no SQLite | baixa |
-| 7 | Adicionar as novas variáveis (`DB_ENGINE`, `POSTGRES_*`, `DJANGO_ALLOWED_HOSTS`) no `.env.example` | baixa |
-| 8 | Configurar backup automático no servidor de produção | quando houver servidor |
+| 1 | Criar uma rota na API para registrar multa usando `services.registrar_multa` (hoje o `MultaViewSet` grava direto, sem finalizar o aluguel nem liberar o carro) | alta |
+| 2 | Comando de *seed* (`python manage.py popular_banco`) com carros/clientes de exemplo para a apresentação. A pasta `locadora/management/commands/` já existe e está vazia | média |
+| 3 | Adicionar as novas variáveis (`DB_ENGINE`, `POSTGRES_*`, `DJANGO_ALLOWED_HOSTS`) no `.env.example` | baixa |
+| 4 | Configurar backup automático no servidor de produção | quando houver servidor |
 
 ## Encontrado em outras partes do código (avisar o time)
 
-Esses pontos não são da camada de banco, mas vão gerar **erro 500** quando usados:
-
-| # | Arquivo | Problema |
-|---|---|---|
-| 1 | ~~`locadora/serializers.py` (`MultaSerializer`)~~ | ~~Usava `descricao` em vez de `motivo`~~ **corrigido nesta branch** (o CI acusou) |
-| 2 | `locadora/services.py` (`registrar_multa`) | Também usa `descricao` e não preenche `dias_atrasos` (campo obrigatório) |
-| 3 | `locadora/serializers.py` (`CarroSerializer`) | Falta o campo `marca` (obrigatório no banco). Criar carro pela API falha |
-| 4 | `locadora/views.py` (`MultaViewSet`) | O `funcionario` vem do corpo da requisição; deveria ser o usuário logado |
-| 5 | `locadora/services.py` (`devolver_carro`) | Não trava o aluguel. Com o repositório, `alugueis.finalizar()` já resolve isso |
-| 6 | ~~`README.md`~~ | ~~Vazio~~ **feito nesta branch** |
-| 7 | `config/settings.py` | Depois do HTTPS: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` |
-| 8 | Testes da API | Nenhuma view tem teste ainda |
+| # | Arquivo | Problema | Situação |
+|---|---|---|---|
+| 1 | `serializers.py` (`MultaSerializer`) | Usava `descricao` em vez de `motivo` | ✅ corrigido nesta branch |
+| 2 | `services.py` (`registrar_multa`) | Usava `descricao` e não preenchia `dias_atrasos` | ✅ corrigido nesta branch |
+| 3 | `services.py` (`devolver_carro`) | Não travava o aluguel (devolução dupla simultânea) | ✅ corrigido nesta branch |
+| 4 | `serializers.py` (`CarroSerializer`) | Falta o campo `marca` (obrigatório no banco). Criar carro pela API dá erro 500 | pendente |
+| 5 | `views.py` (`MultaViewSet`) | O `funcionario` vem do corpo da requisição; deveria ser o usuário logado | pendente |
+| 6 | `views.py` (`AluguelViewSet.perform_destroy`) | Não trata `RegraDeNegocio` do `excluir_aluguel`. Excluir aluguel com multa dá 500; deveria dar 409 com `raise Conflito(str(erro))`, como nas outras ações | pendente |
+| 7 | `config/settings.py` | Depois do HTTPS: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` | quando houver HTTPS |
+| 8 | Testes da API | Nenhuma view tem teste ainda (usar `APIClient` do DRF: 401/403/404/409) | pendente |

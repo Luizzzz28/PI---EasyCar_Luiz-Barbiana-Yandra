@@ -1,4 +1,4 @@
-#Arquivo para criação de modelos do Django
+# Arquivo para criação de modelos do Django
 
 from decimal import Decimal
 
@@ -6,13 +6,12 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
-    #--- MODELOS ESPECÍFICOS ---
+# --- MODELOS ESPECÍFICOS ---
 
-#Modelo de perfil de cliente, que estende o modelo de usuário padrão do Django
+
+# Modelo de perfil de cliente, que estende o modelo de usuário padrão do Django
 class PerfilCliente(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_cliente'
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil_cliente')
     cnh = models.CharField('CNH', max_length=11, unique=True)
     telefone = models.CharField(max_length=20)
     endereco = models.CharField('endereço', max_length=255)
@@ -29,7 +28,7 @@ class PerfilCliente(models.Model):
         return self.user.get_full_name() or self.user.username
 
 
-#Modelo de carro, com status de disponibilidade
+# Modelo de carro, com status de disponibilidade
 class Carro(models.Model):
     class Status(models.TextChoices):
         DISPONIVEL = 'disponivel', 'Disponível'
@@ -44,12 +43,13 @@ class Carro(models.Model):
 
     class Meta:
         ordering = ['modelo', 'placa']
+        indexes = [models.Index(fields=['status'], name='carro_status_idx')]
 
     def __str__(self):
         return f'{self.modelo} ({self.placa})'
 
 
-#Modelo de aluguel, que relaciona um perfil de cliente, um carro e um funcionário
+# Modelo de aluguel, que relaciona um perfil de cliente, um carro e um funcionário
 class Aluguel(models.Model):
     class Status(models.TextChoices):
         ATIVO = 'ativo', 'Ativo'
@@ -75,13 +75,20 @@ class Aluguel(models.Model):
                 name='aluguel_fim_depois_do_inicio',
             ),
             models.CheckConstraint(condition=models.Q(valor__gt=0), name='aluguel_valor_positivo'),
+            # O banco garante: um carro não pode ter dois aluguéis ativos ao mesmo tempo
+            models.UniqueConstraint(
+                fields=['carro'],
+                condition=models.Q(status='ativo'),
+                name='aluguel_um_ativo_por_carro',
+            ),
         ]
+        indexes = [models.Index(fields=['status'], name='aluguel_status_idx')]
 
     def __str__(self):
         return f'Aluguel {self.pk}: {self.carro.placa} para {self.perfil_cliente}'
 
 
-#Modelo de multas, que relaciona um aluguel e um funcionário
+# Modelo de multas, que relaciona um aluguel e um funcionário
 class Multa(models.Model):
     class Status(models.TextChoices):
         PENDENTE = 'pendente', 'Pendente'
@@ -98,9 +105,14 @@ class Multa(models.Model):
     data_infracao = models.DateField('data da infração')
     data_pagamento = models.DateField('data de pagamento', null=True, blank=True)
     motivo = models.TextField('motivo da multa', max_length=500)
+
     class Meta:
         ordering = ['-data_infracao', '-id']
         verbose_name_plural = 'multas'
+        constraints = [
+            models.CheckConstraint(condition=models.Q(valor__gt=0), name='multa_valor_positivo'),
+            models.CheckConstraint(condition=models.Q(dias_atrasos__gte=1), name='multa_dias_atraso_minimo'),
+        ]
 
     def __str__(self):
         return f'Multa {self.pk}: {self.aluguel} - {self.funcionario.get_full_name()}'
