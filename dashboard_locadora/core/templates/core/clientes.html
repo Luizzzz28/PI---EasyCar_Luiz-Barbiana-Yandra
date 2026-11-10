@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clientes | Aluguel de Carros Ltda.</title>
+<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Aluguel de Carros Ltda. - início">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5 5.1 8a2 2 0 0 1 1.8-1.2h10.2A2 2 0 0 1 19 8l2 5.5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17H6v1.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M5 13h14M7 16h.01M17 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </span>
+    <span>Aluguel de Carros <span class="brand-muted">Ltda.</span></span>
+  </a>
+  <nav class="topnav" aria-label="Navegação principal">
+    <a class="nav-link" href="/">Painel</a>
+    <a class="nav-link" href="/carros/">Carros disponíveis</a>
+    <a class="nav-link active" href="/clientes/">Clientes</a>
+    <a class="nav-link" href="/taxas-atraso/">Taxas de atraso</a>
+  </nav>
+  <a class="profile-link" href="/admin/"><span class="profile-avatar">A</span><span class="profile-label">Área administrativa</span></a>
+</header>
+
+<main class="dashboard clients-page">
+  <div class="clients-heading">
+    <div><span class="section-kicker">GESTÃO DE CADASTROS</span><h1>Clientes</h1><p>Cadastre e consulte os clientes da locadora.</p></div>
+    <a class="button button-blue" href="#novo-cliente">+ Adicionar cliente</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="success-message" role="status">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <section class="clients-layout">
+    <article class="panel client-form-panel" id="novo-cliente">
+      <div class="panel-heading"><div><span class="section-kicker">NOVO CADASTRO</span><h2>Adicionar cliente</h2></div><span class="client-form-icon" aria-hidden="true">+</span></div>
+      <p class="form-intro">Preencha os dados abaixo para adicionar um cliente à sua base.</p>
+      <form method="post" class="client-form" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-field{% if field.errors %} has-error{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+          {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+        <div class="form-errors">{% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}</div>
+        {% endif %}
+        <button class="button button-blue submit-client" type="submit">Salvar cliente <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="privacy-note">Os dados são usados para o cadastro de clientes e protegidos por acesso autenticado.</p>
+    </article>
+
+    <article class="panel client-list-panel">
+      <div class="panel-heading"><div><span class="section-kicker">BASE DE CLIENTES</span><h2>Clientes cadastrados</h2></div><span class="count-pill">{{ clientes|length }} cliente{{ clientes|length|pluralize:"s" }}</span></div>
+      <form method="get" class="client-search">
+        <label class="sr-only" for="busca-clientes">Buscar por nome ou CPF</label>
+        <input id="busca-clientes" type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome ou CPF">
+        <button class="search-button" type="submit">Buscar</button>
+      </form>
+      <div class="sc"><table class="clients-table">
+        <thead><tr><th>Nome</th><th>Telefone</th><th>Cadastro</th></tr></thead>
+        <tbody>
+        {% for cliente in clientes %}
+        <tr><td class="customer-cell">{{ cliente.nome }}</td><td>{{ cliente.telefone }}</td><td class="muted-cell">{{ cliente.criado_em|date:"d/m/Y" }}</td></tr>
+        {% empty %}
+        <tr><td colspan="3" class="empty-table">{% if busca %}Nenhum cliente encontrado para essa busca.{% else %}Ainda não há clientes. Use o formulário para adicionar o primeiro.{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <a class="inline-link api-client-link" href="/carros/">Ver carros disponíveis <span aria-hidden="true">→</span></a>
+    </article>
+  </section>
+  <footer class="footer"><span>© Aluguel de Carros Ltda.</span><span>Mobilidade para ir mais longe.</span></footer>
+</main>
+</body>
+</html>

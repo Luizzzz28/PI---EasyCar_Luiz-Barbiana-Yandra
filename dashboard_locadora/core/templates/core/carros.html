@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101a30">
+<title>Carros disponíveis | Aluguel de Carros Ltda.</title>
+<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Aluguel de Carros Ltda. - início">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5 5.1 8a2 2 0 0 1 1.8-1.2h10.2A2 2 0 0 1 19 8l2 5.5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17H6v1.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M5 13h14M7 16h.01M17 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </span>
+    <span>Aluguel de Carros <span class="brand-muted">Ltda.</span></span>
+  </a>
+  <nav class="topnav" aria-label="Navegação principal">
+    <a class="nav-link" href="/">Painel</a>
+    <a class="nav-link active" href="/carros/">Carros disponíveis</a>
+    <a class="nav-link" href="/clientes/">Clientes</a>
+    <a class="nav-link" href="/taxas-atraso/">Taxas de atraso</a>
+  </nav>
+  <a class="profile-link" href="/api-auth/login/"><span class="profile-avatar">A</span><span class="profile-label">Área administrativa</span></a>
+</header>
+
+<main class="dashboard cars-page">
+  <section class="cars-hero">
+    <div class="cars-hero-copy">
+      <span class="eyebrow"><span class="eyebrow-dot"></span> NOSSA FROTA</span>
+      <h1>Encontre o carro ideal para <span>sua jornada.</span></h1>
+      <p>Explore modelos, confira as diárias de referência e escolha seu próximo caminho.</p>
+    </div>
+    <img src="{% static 'core/img/car-photo-fleet.jpg' %}" alt="" class="cars-hero-photo">
+  </section>
+
+  <div class="cars-section-heading">
+    <div><span class="section-kicker">CONFORTO, ESTILO E LIBERDADE</span><h2>Carros disponíveis</h2></div>
+    <span class="period-pill"><span class="live-dot"></span> {{ carros|length }} modelos</span>
+  </div>
+  <p class="catalog-notice">Diárias de referência para demonstração. Consulte a disponibilidade e o valor final antes de reservar.</p>
+
+  <section class="vehicle-grid" aria-label="Modelos de carros para aluguel">
+    {% for carro in carros %}
+    <article class="vehicle-card">
+      <div class="vehicle-photo-wrap">
+        <img class="vehicle-photo" src="{% static carro.imagem %}" alt="Foto do modelo {{ carro.nome }}" loading="lazy" width="760">
+        <span class="availability-badge"><span></span> Consulte disponibilidade</span>
+        <span class="vehicle-category">{{ carro.categoria }}</span>
+      </div>
+      <div class="vehicle-info">
+        <h3>{{ carro.nome }}</h3>
+        <div class="vehicle-price"><span>Diária a partir de</span><strong>R$ {{ carro.diaria|floatformat:"2g" }}</strong></div>
+        <div class="vehicle-credit">
+          Foto: <a href="{{ carro.credito.description_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.autor }}</a>
+          · <a href="{{ carro.credito.license_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.license }}</a>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <p class="catalog-legal">As fotos são de referência e estão creditadas individualmente. Modelos, tarifas e disponibilidade são demonstrativos e podem ser ajustados em <code>core/catalogo.py</code>.</p>
+  <footer class="footer"><span>© Aluguel de Carros Ltda.</span><span>Mobilidade para ir mais longe.</span></footer>
+</main>
+</body>
+</html>

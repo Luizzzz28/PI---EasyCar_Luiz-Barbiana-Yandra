@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101a30">
+<title>Taxas de atraso | Aluguel de Carros Ltda.</title>
+<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Aluguel de Carros Ltda. - início">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5 5.1 8a2 2 0 0 1 1.8-1.2h10.2A2 2 0 0 1 19 8l2 5.5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17H6v1.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M5 13h14M7 16h.01M17 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </span>
+    <span>Aluguel de Carros <span class="brand-muted">Ltda.</span></span>
+  </a>
+  <nav class="topnav" aria-label="Navegação principal">
+    <a class="nav-link" href="/">Painel</a>
+    <a class="nav-link" href="/carros/">Carros disponíveis</a>
+    <a class="nav-link" href="/clientes/">Clientes</a>
+    <a class="nav-link active" href="/taxas-atraso/">Taxas de atraso</a>
+  </nav>
+  <a class="profile-link" href="/api-auth/login/"><span class="profile-avatar">A</span><span class="profile-label">Área administrativa</span></a>
+</header>
+
+<main class="dashboard rates-page">
+  <section class="rates-hero">
+    <div class="rates-hero-copy">
+      <span class="eyebrow"><span class="eyebrow-dot"></span> DEVOLUÇÃO DO VEÍCULO</span>
+      <h1>Taxas de atraso, <span>sem surpresas.</span></h1>
+      <p>Consulte as faixas de cobrança e calcule uma estimativa com base no carro e no tempo de atraso.</p>
+    </div>
+    <span class="rates-hero-icon" aria-hidden="true">
+      <svg viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="48" stroke="currentColor" stroke-opacity=".22" stroke-width="2"/><circle cx="60" cy="60" r="35" stroke="currentColor" stroke-opacity=".38" stroke-width="2"/><path d="M60 38v23l15 9" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M89 25 99 23l-2 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+  </section>
+
+  <section class="rates-content-grid">
+    <article class="panel rates-table-panel">
+      <div class="panel-heading"><div><span class="section-kicker">REGRAS DA LOCADORA</span><h2>Tabela de taxas de atraso</h2></div><span class="panel-badge">Por devolução</span></div>
+      <div class="sc"><table class="rules-table">
+        <thead><tr><th>Tempo de atraso</th><th>Como é calculada a multa</th></tr></thead>
+        <tbody>
+          {% for faixa in faixas_atraso %}
+          <tr>
+            <td><span class="rule-time"><span class="rate-marker">{{ forloop.counter|stringformat:"02d" }}</span><strong>{{ faixa.faixa }}</strong></span></td>
+            <td>{{ faixa.regra }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+      <p class="rates-footnote">Nas faixas de 1h a 3h, o cálculo considera as horas informadas. Acima de 3h, cada dia ou fração corresponde a uma diária com adicional de 10%.</p>
+    </article>
+
+    <article class="panel late-calculator">
+      <div class="panel-heading"><div><span class="section-kicker">CÁLCULO ESTIMADO</span><h2>Calculadora de atraso</h2></div><span class="calculator-icon" aria-hidden="true">↗</span></div>
+      <p class="calculator-intro">Escolha um modelo e informe por quanto tempo a devolução passou do horário.</p>
+      <div class="calculator-fields">
+        <label for="carro-calculo">Modelo do carro
+          <select id="carro-calculo">
+            {% for carro in carros %}
+            <option value="{{ carro.slug }}" data-diaria="{{ carro.diaria }}">{{ carro.nome }} — R$ {{ carro.diaria|floatformat:"2g" }}/dia</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label for="horas-atraso">Horas de atraso
+          <input id="horas-atraso" type="number" min="0" max="8760" step="0.5" value="2" inputmode="decimal">
+        </label>
+      </div>
+      <div class="daily-reference"><span>Valor da diária</span><strong id="valor-diaria"></strong></div>
+      <div class="calculation-result" aria-live="polite">
+        <span class="result-label">Multa estimada</span>
+        <strong class="result-value" id="valor-multa">R$ 0,00</strong>
+        <span class="result-explanation" id="detalhe-calculo">Até 1 hora de atraso: sem cobrança.</span>
+      </div>
+      <p class="calculator-disclaimer">Simulação com valores de referência do catálogo. O valor final pode variar conforme o contrato e as regras aplicáveis ao aluguel.</p>
+    </article>
+  </section>
+
+  <article class="panel car-rates-panel">
+    <div class="panel-heading"><div><span class="section-kicker">VALORES DO CATÁLOGO</span><h2>Diária e taxas por modelo</h2></div><a class="inline-link" href="/carros/">Ver fotos dos carros <span aria-hidden="true">→</span></a></div>
+    <div class="sc"><table class="car-rates-table">
+      <thead><tr><th>Modelo</th><th>Categoria</th><th class="r">Diária</th><th class="r">10% por hora (1h a 3h)</th><th class="r">Multa por dia ou fração (&gt; 3h)</th></tr></thead>
+      <tbody>
+      {% for carro in carros %}
+      <tr>
+        <td class="customer-cell">{{ carro.nome }}</td>
+        <td><span class="tag">{{ carro.categoria }}</span></td>
+        <td class="r">R$ {{ carro.diaria|floatformat:"2g" }}</td>
+        <td class="r">R$ {{ carro.taxa_hora|floatformat:"2g" }}</td>
+        <td class="r">R$ {{ carro.multa_dia|floatformat:"2g" }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </article>
+
+  <p class="catalog-legal">Os valores deste catálogo são referências demonstrativas; disponibilidade e tarifa final devem ser confirmadas no contrato de locação.</p>
+  <footer class="footer"><span>© Aluguel de Carros Ltda.</span><span>Mobilidade para ir mais longe.</span></footer>
+</main>
+{{ catalogo_calculadora|json_script:"catalogo-calculadora" }}
+{{ parametros_calculadora|json_script:"parametros-calculadora" }}
+<script src="{% static 'core/js/taxas_atraso.js' %}" defer></script>
+</body>
+</html>
