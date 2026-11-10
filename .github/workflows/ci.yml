@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        db: [sqlite, postgres]   # o mesmo SQL precisa passar nos dois
+        db: [sqlite, postgres]   # o mesmo código precisa passar nos dois bancos
     services:
       postgres:
         image: postgres:17-alpine
