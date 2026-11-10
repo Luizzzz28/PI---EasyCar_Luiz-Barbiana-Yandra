@@ -1,8 +1,9 @@
 # Banco de produção (PostgreSQL)
 
-Em produção usamos **PostgreSQL 17**: aguenta muitos acessos simultâneos, tem
-travamento por linha (`FOR UPDATE`), tipos de dados reais (`numeric`, `date`) e
-ferramentas de backup.
+Em produção usamos **PostgreSQL 17**: aguenta muitos acessos simultâneos, trava
+linhas individuais (`SELECT ... FOR UPDATE`), tem tipos de dados exatos (`numeric`,
+`date`) e ferramentas de backup. O acesso é feito pelo **ORM do Django**, o mesmo
+código usado com SQLite nos testes.
 
 ## Como a aplicação escolhe o banco
 
@@ -12,8 +13,8 @@ Em `config/settings.py`:
 flowchart TD
     A["settings.py lê DB_ENGINE"] --> B{"valor?"}
     B -->|"sqlite (padrão)"| C["django.db.backends.sqlite3<br/>arquivo SQLITE_PATH ou db.sqlite3"]
-    B -->|postgres| D["django.db.backends.postgresql<br/>POSTGRES_DB / USER / PASSWORD / HOST / PORT"]
-    B -->|outro| E["RuntimeError<br/>(falha logo ao iniciar)"]
+    B -->|"postgres"| D["django.db.backends.postgresql<br/>POSTGRES_DB / USER / PASSWORD / HOST / PORT"]
+    B -->|"outro"| E["RuntimeError<br/>(falha logo ao iniciar)"]
 ```
 
 No PostgreSQL também estão ligados:
@@ -43,6 +44,35 @@ python -c "from django.core.management.utils import get_random_secret_key as k; 
 > Nunca coloque senhas reais no Git. O `.env` está no `.gitignore`. No servidor,
 > use as variáveis/segredos da hospedagem.
 
+## Como o ORM conversa com o banco
+
+```mermaid
+flowchart LR
+    M["models.py<br/>(classes Python)"] -->|"makemigrations"| MG["migrations/000X_*.py<br/>(versão do esquema)"]
+    MG -->|"migrate"| T[("Tabelas, constraints<br/>e índices no banco")]
+    C["Código: Carro.objects.filter(status='disponivel')"] -->|"ORM gera SQL"| Q["SELECT ... FROM locadora_carro<br/>WHERE status = 'disponivel'"]
+    Q --> T
+```
+
+- **`models.py`** descreve as tabelas em Python.
+- **`makemigrations`** compara os models com as migrations e gera um arquivo novo
+  com as diferenças. Esse arquivo **vai para o Git**.
+- **`migrate`** aplica no banco as migrations que ainda não foram aplicadas. No
+  Docker isso roda sozinho ao subir o container.
+- O Django guarda o que já foi aplicado na tabela `django_migrations`.
+
+Migrations do projeto:
+
+| Migration | O que faz |
+|---|---|
+| `0001_initial` | Cria as tabelas `locadora_carro`, `locadora_perfilcliente`, `locadora_aluguel`, `locadora_multa` |
+| `0002_constraints_e_indices` | Índices em `status` (carro e aluguel), "um aluguel ativo por carro", `CHECK` de valor e dias de atraso da multa |
+
+Para ver o SQL que uma migration gera no PostgreSQL (precisa do banco no ar):
+```bash
+DB_ENGINE=postgres python manage.py sqlmigrate locadora 0002
+```
+
 ## Modelo de dados
 
 ```mermaid
@@ -55,7 +85,7 @@ erDiagram
     locadora_aluguel ||--o{ locadora_multa : "gera"
 
     auth_user {
-        bigint id PK
+        int id PK
         varchar username UK
         varchar first_name
         varchar last_name
@@ -74,25 +104,25 @@ erDiagram
         varchar_100 modelo
         varchar_7 placa UK
         smallint ano
-        varchar_12 status "disponivel / alugado / manutencao"
+        varchar_12 status "disponivel / alugado / manutencao (indexado)"
     }
     locadora_aluguel {
         bigint id PK
         bigint perfil_cliente_id FK
-        bigint carro_id FK
+        bigint carro_id FK "único entre os ativos"
         int funcionario_id FK
         date data_inicio
         date data_fim "CHECK >= data_inicio"
         numeric_10_2 valor "CHECK > 0"
-        varchar_10 status "ativo / finalizado"
+        varchar_10 status "ativo / finalizado (indexado)"
         date data_devolucao "nulo enquanto ativo"
     }
     locadora_multa {
         bigint id PK
         bigint aluguel_id FK
         int funcionario_id FK
-        int dias_atrasos
-        numeric_10_2 valor
+        int dias_atrasos "CHECK >= 1"
+        numeric_10_2 valor "CHECK > 0"
         varchar_10 status "pendente / pago / abonado"
         date data_infracao
         date data_pagamento "nulo enquanto pendente"
@@ -103,28 +133,28 @@ erDiagram
 Relações:
 - **1:1**: `auth_user` ↔ `locadora_perfilcliente` (um usuário cliente tem um perfil).
 - **1:N**: funcionário → aluguéis; funcionário → multas; aluguel → multas.
-- **N:N**: cliente ↔ carro, usando `locadora_aluguel` como tabela intermediária.
+- **N:N**: cliente ↔ carro, usando `locadora_aluguel` como tabela intermediária
+  (`PerfilCliente.carros = ManyToManyField(through='Aluguel')`).
 
-### Regras garantidas pelo próprio banco
+### Regras garantidas
 
-| Regra | Onde |
-|---|---|
-| Placa única | `UNIQUE (placa)` em `locadora_carro` |
-| CNH única | `UNIQUE (cnh)` em `locadora_perfilcliente` |
-| Um perfil por usuário | `UNIQUE (user_id)` em `locadora_perfilcliente` |
-| Fim do aluguel ≥ início | `CHECK aluguel_fim_depois_do_inicio` |
-| Valor do aluguel > 0 | `CHECK aluguel_valor_positivo` |
-| Chaves estrangeiras válidas | `FOREIGN KEY ... DEFERRABLE INITIALLY DEFERRED` |
+| Regra | Onde | Quem garante |
+|---|---|---|
+| Placa única | `Carro.placa unique=True` | banco (`UNIQUE`) |
+| CNH única | `PerfilCliente.cnh unique=True` | banco (`UNIQUE`) |
+| Um perfil por usuário | `OneToOneField` | banco (`UNIQUE`) |
+| Fim do aluguel ≥ início | `CheckConstraint aluguel_fim_depois_do_inicio` | banco (`CHECK`) |
+| Valor do aluguel > 0 | `CheckConstraint aluguel_valor_positivo` | banco (`CHECK`) |
+| **Um aluguel ativo por carro** | `UniqueConstraint aluguel_um_ativo_por_carro` (condição `status='ativo'`) | banco (índice único parcial) |
+| Valor da multa > 0 | `CheckConstraint multa_valor_positivo` | banco (`CHECK`) |
+| Dias de atraso ≥ 1 | `CheckConstraint multa_dias_atraso_minimo` | banco (`CHECK`) |
+| Não apagar carro/cliente/funcionário/aluguel com histórico | `on_delete=PROTECT` | Django (ORM) |
+| Apagar usuário apaga o perfil | `on_delete=CASCADE` | Django (ORM) |
+| Status do carro acompanha o aluguel | `services.py` | código, em transação |
 
-> ⚠️ O `on_delete=PROTECT`/`CASCADE` dos models é aplicado pelo **Django em Python**,
-> não pelo banco. Com SQL puro, um `DELETE` de um carro com aluguéis só falha no
-> `COMMIT`. Por isso os repositórios têm `tem_alugueis()`/`tem_multas()`: o service
-> deve consultar antes de excluir.
-
-Para ver o SQL exato que cria as tabelas no PostgreSQL:
-```bash
-DB_ENGINE=postgres python manage.py sqlmigrate locadora 0001
-```
+> As regras de `CHECK`/`UNIQUE` valem **mesmo se alguém pular a API** (admin,
+> shell, script). O `PROTECT`/`CASCADE` é aplicado pelo ORM, então funciona sempre
+> que o acesso passa pelo Django.
 
 ## Ciclo de vida dos status
 
@@ -133,10 +163,10 @@ stateDiagram-v2
     direction LR
     state "Carro" as C {
         [*] --> disponivel
-        disponivel --> alugado: registrar aluguel
-        alugado --> disponivel: devolver / multar
-        disponivel --> manutencao
-        manutencao --> disponivel
+        disponivel --> alugado: registrar_aluguel
+        alugado --> disponivel: devolver_carro / registrar_multa
+        disponivel --> manutencao: edição pelo funcionário
+        manutencao --> disponivel: edição pelo funcionário
     }
 ```
 
@@ -144,25 +174,25 @@ stateDiagram-v2
 stateDiagram-v2
     direction LR
     state "Aluguel" as A {
-        [*] --> ativo
-        ativo --> finalizado: devolução (finalizar)
+        [*] --> ativo: registrar_aluguel
+        ativo --> finalizado: devolver_carro / registrar_multa
     }
     state "Multa" as M {
-        [*] --> pendente
-        pendente --> pago: registrar_pagamento
-        pendente --> abonado: abonar
+        [*] --> pendente: registrar_multa
+        pendente --> pago
+        pendente --> abonado
     }
 ```
 
-Os `UPDATE` de mudança de status têm a condição do estado atual no `WHERE`
-(ex.: `... WHERE id = %s AND status = 'ativo'`). Se duas pessoas tentarem
-finalizar o mesmo aluguel ao mesmo tempo, só uma consegue (`rowcount = 1`) e a
-outra recebe `0`.
+## Transações e concorrência
 
-## Concorrência: alugar o mesmo carro ao mesmo tempo
+Toda operação que mexe em mais de uma tabela está em `services.py`, dentro de
+`@transaction.atomic`: ou grava **tudo**, ou **nada**. Exemplo:
+`registrar_multa` cria a multa, finaliza o aluguel e libera o carro. Se qualquer
+passo falhar, os outros são desfeitos.
 
-Sem trava, dois funcionários poderiam alugar o mesmo carro no mesmo instante. Com
-`transaction.atomic()` + `buscar_por_id(..., bloquear=True)` (que gera `FOR UPDATE`):
+As linhas envolvidas são travadas com `select_for_update()`. Quando dois
+funcionários tentam alugar o mesmo carro no mesmo instante:
 
 ```mermaid
 sequenceDiagram
@@ -170,49 +200,50 @@ sequenceDiagram
     participant F2 as Funcionário 2
     participant PG as PostgreSQL
     F1->>PG: BEGIN
-    F1->>PG: SELECT ... FROM locadora_carro WHERE id=7 FOR UPDATE
+    F1->>PG: Carro.objects.select_for_update().get(pk=7)
     PG-->>F1: status = disponivel (linha TRAVADA)
     F2->>PG: BEGIN
-    F2->>PG: SELECT ... WHERE id=7 FOR UPDATE
+    F2->>PG: Carro.objects.select_for_update().get(pk=7)
     Note over F2,PG: F2 fica esperando a trava
-    F1->>PG: INSERT locadora_aluguel ...
-    F1->>PG: UPDATE locadora_carro SET status='alugado'
+    F1->>PG: Aluguel.objects.create(...)
+    F1->>PG: carro.status = 'alugado'; carro.save()
     F1->>PG: COMMIT (libera a trava)
     PG-->>F2: status = alugado
     F2->>F2: RegraDeNegocio → HTTP 409
     F2->>PG: ROLLBACK
 ```
 
-Exemplo de service usando os repositórios:
+Se mesmo assim algo escapar, a constraint `aluguel_um_ativo_por_carro` recusa o
+segundo aluguel ativo no próprio banco.
+
+O código correspondente (`locadora/services.py`):
 
 ```python
-from django.db import transaction
-from locadora.repositories import alugueis, carros
-
-
 @transaction.atomic
-def registrar_aluguel(perfil_id: int, carro_id: int, funcionario_id: int,
-                      inicio: date, fim: date, valor: Decimal) -> AluguelLinha:
-    carro = carros.buscar_por_id(carro_id, bloquear=True)
-    if carro is None:
-        raise RegraDeNegocio('Carro não encontrado.')
-    if carro['status'] != 'disponivel':
-        raise RegraDeNegocio(f"O carro {carro['placa']} não está disponível.")
-    aluguel = alugueis.criar(perfil_id, carro_id, funcionario_id, inicio, fim, valor)
-    carros.atualizar_status(carro_id, 'alugado')
+def registrar_aluguel(dados: dict[str, Any], funcionario: User) -> Aluguel:
+    carro = Carro.objects.select_for_update().get(pk=dados['carro'].pk)
+    if carro.status != Carro.Status.DISPONIVEL:
+        raise RegraDeNegocio(f'O carro {carro.placa} não está disponível (...).')
+    aluguel = Aluguel.objects.create(funcionario=funcionario, **{**dados, 'carro': carro})
+    carro.status = Carro.Status.ALUGADO
+    carro.save(update_fields=['status'])
     return aluguel
 ```
+
+Na devolução e na multa, o service relê o status **do banco** (travando a linha)
+em vez de confiar no objeto em memória. Assim, se outra requisição acabou de
+finalizar o aluguel, a segunda é recusada.
 
 ## Arquitetura de produção sugerida
 
 ```mermaid
 flowchart LR
-    U["Usuários"] -->|HTTPS| P["Proxy / HTTPS<br/>(da hospedagem ou nginx)"]
-    P -->|HTTP :8000| A["Container da API<br/>gunicorn (3 workers)"]
+    U["Usuários"] -->|"HTTPS"| P["Proxy / HTTPS<br/>(da hospedagem ou nginx)"]
+    P -->|"HTTP :8000"| A["Container da API<br/>gunicorn (3 workers)"]
     A -->|"5432 (rede privada)"| D[("PostgreSQL 17<br/>gerenciado ou container")]
     D --> B[("Backups diários")]
-    CI["GitHub Actions"] -->|imagem| R["GHCR<br/>ghcr.io/.../easycar"]
-    R -->|docker pull| A
+    CI["GitHub Actions"] -->|"imagem"| R["GHCR<br/>ghcr.io/.../easycar"]
+    R -->|"docker pull"| A
 ```
 
 - O PostgreSQL **não** deve ficar exposto na internet: só a API acessa.
@@ -240,5 +271,6 @@ docker compose exec -T db pg_restore -U easycar -d easycar --clean < backup_2026
 - [ ] HTTPS ativo + configurações `SECURE_*`
 - [ ] Backup automático configurado
 - [ ] `python manage.py check --deploy` sem avisos
+- [ ] `python manage.py migrate` aplicado (o container já faz ao subir)
 - [ ] `python manage.py createsuperuser` para o primeiro admin
 - [ ] Grupos `Funcionários` e `Clientes` criados no admin

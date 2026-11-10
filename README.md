@@ -7,7 +7,7 @@ por grupos (Funcionários e Clientes). Feita com Django + Django REST Framework.
 
 - **SQLite** para desenvolvimento e testes automatizados
 - **PostgreSQL 17** para produção (via Docker)
-- Acesso a dados com **SQL puro** em `locadora/db.py` e `locadora/repositories/`
+- Acesso a dados com o **ORM do Django** (`locadora/models.py`); regras de negócio com transação em `locadora/services.py`
 
 ## Como rodar
 

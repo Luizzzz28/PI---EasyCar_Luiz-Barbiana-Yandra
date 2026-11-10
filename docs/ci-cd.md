@@ -46,11 +46,11 @@ Constrói a imagem com o `Dockerfile` (cache do GitHub Actions para ficar rápid
 
 ```mermaid
 flowchart TB
-    subgraph HOJE["Hoje"]
-        R["Repositórios (SQL)<br/>35 testes, SQLite + PostgreSQL"]
+    subgraph HOJE["Hoje: 36 testes, SQLite + PostgreSQL"]
+        R["Models<br/>constraints do banco"]
+        SV["Services<br/>regras de negócio + transações"]
     end
     subgraph PROX["Próximos"]
-        SV["Services<br/>regras de negócio"]
         API["API<br/>APIClient do DRF: 401/403/404/409"]
         E2E["Fluxos completos<br/>alugar → devolver → multar"]
     end
@@ -59,8 +59,9 @@ flowchart TB
 
 | Camada | O que testar | Situação |
 |---|---|---|
-| Repositórios | SQL, constraints, tipos, paginação | ✅ feito |
-| Services | carro indisponível → erro; devolução dupla → erro | pendente |
+| Models | constraints (UNIQUE, CHECK, um aluguel ativo por carro), PROTECT/CASCADE, tipos, ordenação | ✅ feito (20 testes) |
+| Services | carro indisponível, devolução dupla, multa, rollback da transação | ✅ feito (14 testes) |
+| Serializers × banco | a constraint nova não atrapalha a validação da API | ✅ feito (2 testes) |
 | API | sem login 401, cliente sem permissão 403/404, conflito 409 | pendente |
 | Fluxos | alugar → devolver; alugar → multar; excluir carro com aluguel | pendente |
 
