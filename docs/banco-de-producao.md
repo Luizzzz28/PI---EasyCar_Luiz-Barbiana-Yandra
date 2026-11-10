@@ -25,7 +25,7 @@ No PostgreSQL também estão ligados:
 
 | Variável | Exemplo | Obrigatória em produção | Descrição |
 |---|---|---|---|
-| `DJANGO_SECRET_KEY` | (string longa e aleatória) | **sim** | Chave de criptografia do Django. Sem ela e com `DEBUG=0`, a aplicação não sobe |
+| `DJANGO_SECRET_KEY` | (string longa e aleatória) | **sim** | Chave secreta do Django, usada para assinar sessões e tokens. Sem ela e com `DEBUG=0`, a aplicação não sobe |
 | `DJANGO_DEBUG` | `0` | sim | `1` só em desenvolvimento. O padrão é `0` (seguro) |
 | `DJANGO_ALLOWED_HOSTS` | `api.easycar.com.br` | sim | Domínios aceitos, separados por vírgula |
 | `DB_ENGINE` | `postgres` | sim | `sqlite` ou `postgres` |

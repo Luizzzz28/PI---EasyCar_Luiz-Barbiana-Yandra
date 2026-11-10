@@ -33,7 +33,7 @@ flowchart TD
 ```dockerfile
 FROM python:3.13-slim
 ```
-Imagem base oficial do Python 3.13 em Debian "slim" (sem pacotes desnecessários, ~50 MB).
+Imagem base oficial do Python 3.13 em Debian "slim" (sem pacotes desnecessários, cerca de 45 MB para baixar).
 
 ```dockerfile
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -164,6 +164,7 @@ O build e o compose foram testados localmente:
 | `GET /api/carros/` sem login | 401 (protegido) |
 | Usuário do processo no container | `app` (não root) |
 
-> ⚠️ As senhas no `docker-compose.yml` (`easycar`/`troque-em-producao`) são **só para
-> uso local**. Em produção, defina-as como variáveis/segredos do servidor. Veja
+> ⚠️ A senha do banco (`easycar`) e a `DJANGO_SECRET_KEY` (`troque-em-producao`) que estão
+> no `docker-compose.yml` servem **só para uso local**. Em produção, troque as duas e
+> defina-as como variáveis/segredos do servidor. Veja
 > [banco-de-producao.md](banco-de-producao.md#variáveis-de-ambiente).

@@ -39,7 +39,7 @@ Todas fixadas em `requirements.txt` / `requirements-dev.txt` (versões estáveis
 
 | Tecnologia | Versão | Para quê |
 |---|---|---|
-| Python | 3.13 (Docker/CI) | Linguagem (funciona também em 3.12 e 3.14) |
+| Python | 3.13 (Docker/CI) | Linguagem (também testado em 3.14) |
 | Django | 5.2.19 (LTS, suporte até abril/2028) | Framework web |
 | Django REST Framework | 3.18.3 | API REST |
 | drf-spectacular | 0.30.0 | Documentação OpenAPI/Swagger |
