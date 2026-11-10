@@ -56,6 +56,13 @@ class Aluguel(models.Model):
     veiculo = models.CharField("veículo", max_length=100)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     diarias = models.PositiveIntegerField("nº de diárias", default=1)
+    diaria_contratada = models.DecimalField(
+        "valor da diária contratada",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
     horas_atraso = models.DecimalField("horas de atraso", max_digits=5, decimal_places=1, default=0)
 
     class Meta:
@@ -66,8 +73,14 @@ class Aluguel(models.Model):
         return f"#{self.pk} {self.cliente} - {self.veiculo}"
 
     @property
+    def tarifa_diaria(self):
+        if self.diaria_contratada is not None:
+            return self.diaria_contratada
+        return self.categoria.diaria
+
+    @property
     def valor(self):
-        return self.categoria.diaria * self.diarias
+        return self.tarifa_diaria * self.diarias
 
     @property
     def multa(self):
@@ -75,9 +88,9 @@ class Aluguel(models.Model):
         if h <= TOLERANCIA_HORAS:
             return Decimal("0")
         if h <= LIMITE_FAIXA_HORA:
-            return self.categoria.taxa_hora * h
+            return self.tarifa_diaria * PERCENTUAL * h
         dias = math.ceil(h / 24)
-        return self.categoria.multa_dia * dias
+        return self.tarifa_diaria * (1 + PERCENTUAL) * dias
 
     @property
     def total(self):

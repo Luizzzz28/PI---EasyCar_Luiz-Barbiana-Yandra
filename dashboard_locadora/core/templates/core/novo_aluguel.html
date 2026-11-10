@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+{% load static %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registrar aluguel | Aluguel de Carros Ltda.</title>
+<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Aluguel de Carros Ltda. - início">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5 5.1 8a2 2 0 0 1 1.8-1.2h10.2A2 2 0 0 1 19 8l2 5.5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17H6v1.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M5 13h14M7 16h.01M17 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </span>
+    <span>Aluguel de Carros <span class="brand-muted">Ltda.</span></span>
+  </a>
+  <nav class="topnav" aria-label="Navegação principal">
+    <a class="nav-link" href="/">Painel</a>
+    <a class="nav-link active" href="/carros/">Carros disponíveis</a>
+    <a class="nav-link" href="/clientes/">Clientes</a>
+    <a class="nav-link" href="/taxas-atraso/">Taxas de atraso</a>
+  </nav>
+  <a class="profile-link" href="/admin/"><span class="profile-avatar">A</span><span class="profile-label">Área administrativa</span></a>
+</header>
+
+<main class="dashboard clients-page">
+  <div class="clients-heading">
+    <div><span class="section-kicker">NOVO ALUGUEL</span><h1>Registrar aluguel</h1><p>Escolha um cliente cadastrado, o modelo e a quantidade de diárias.</p></div>
+    <a class="button button-blue" href="/carros/">Voltar ao catálogo</a>
+  </div>
+
+  <section class="clients-layout">
+    <article class="panel client-form-panel">
+      {% if carro_selecionado %}
+      <div class="panel-heading"><div><span class="section-kicker">CARRO ESCOLHIDO</span><h2>{{ carro_selecionado.nome }}</h2></div></div>
+      <p class="form-intro">Diária de referência: <strong>R$ {{ carro_selecionado.diaria|floatformat:"2g" }}</strong></p>
+      {% else %}
+      <div class="panel-heading"><div><span class="section-kicker">CARRO E CLIENTE</span><h2>Dados do aluguel</h2></div></div>
+      {% endif %}
+
+      {% if not tem_clientes %}
+      <div class="success-message" role="status">Cadastre um cliente antes de registrar um aluguel.</div>
+      <a class="button button-blue" href="/clientes/">Cadastrar cliente</a>
+      {% else %}
+      <form method="post" class="client-form">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-field{% if field.errors %} has-error{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+          {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+        <button class="button button-blue submit-client" type="submit">Registrar aluguel <span aria-hidden="true">→</span></button>
+      </form>
+      {% endif %}
+      <p class="privacy-note">Os valores e a disponibilidade do catálogo são demonstrativos e devem ser confirmados com a locadora.</p>
+    </article>
+  </section>
+  <footer class="footer"><span>© Aluguel de Carros Ltda.</span><span>Mobilidade para ir mais longe.</span></footer>
+</main>
+</body>
+</html>

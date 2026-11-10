@@ -1,10 +1,11 @@
+from decimal import Decimal
 from pathlib import Path
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APITestCase
 
-from .models import Categoria, Cliente
+from .models import Aluguel, Categoria, Cliente
 from .validators import calcular_dv
 from .catalogo import CARROS_DISPONIVEIS
 
@@ -134,10 +135,78 @@ class CarrosDisponiveisPageTest(TestCase):
                 )
                 self.assertTrue(carro["credito"]["description_url"])
 
+    def test_catalogo_tem_link_para_alugar_cada_carro_escolhido(self):
+        response = self.client.get("/carros/")
+        for carro in CARROS_DISPONIVEIS:
+            with self.subTest(modelo=carro["nome"]):
+                self.assertContains(
+                    response,
+                    f'/alugueis/novo/?carro={carro["slug"]}',
+                )
+
     def test_menu_publico_tem_carros_e_nao_exibe_botao_api(self):
         response = self.client.get("/carros/")
         self.assertContains(response, "Carros disponíveis")
         self.assertNotContains(response, ">API</a>")
+
+
+class AluguelCatalogoPageTest(TestCase):
+    def setUp(self):
+        self.usuario = User.objects.create_user(username="locadora", password="senha-teste")
+        self.cliente = Cliente.objects.create(
+            nome="Maria Silva",
+            cpf=cpf_teste(),
+            telefone="61999991234",
+        )
+
+    def test_registra_aluguel_do_carro_escolhido_para_cliente_cadastrado(self):
+        self.client.login(username="locadora", password="senha-teste")
+        Categoria.objects.create(nome="Sedã", diaria=1000)
+        response = self.client.post("/alugueis/novo/?carro=honda-civic", {
+            "cliente": self.cliente.pk,
+            "carro": "honda-civic",
+            "diarias": 3,
+        })
+
+        self.assertRedirects(response, "/carros/")
+        aluguel = Aluguel.objects.get()
+        self.assertEqual(aluguel.cliente, self.cliente)
+        self.assertEqual(aluguel.veiculo, "Honda Civic")
+        self.assertEqual(aluguel.diarias, 3)
+        self.assertEqual(aluguel.diaria_contratada, 229)
+        self.assertEqual(aluguel.valor, 687)
+        aluguel.horas_atraso = 2
+        aluguel.save()
+        self.assertEqual(aluguel.multa, Decimal("45.80"))
+
+    def test_selecao_do_catalogo_preenche_carro_no_formulario(self):
+        self.client.login(username="locadora", password="senha-teste")
+        response = self.client.get("/alugueis/novo/?carro=toyota-corolla")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"]["carro"].value(), "toyota-corolla")
+        self.assertContains(response, "Toyota Corolla")
+
+    def test_registro_de_aluguel_exige_login(self):
+        response = self.client.get("/alugueis/novo/?carro=honda-civic")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/api-auth/login/", response["Location"])
+
+    def test_nao_registra_modelo_que_nao_pertence_ao_catalogo(self):
+        self.client.login(username="locadora", password="senha-teste")
+        response = self.client.post("/alugueis/novo/", {
+            "cliente": self.cliente.pk,
+            "carro": "modelo-inexistente",
+            "diarias": 1,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Aluguel.objects.count(), 0)
+
+    def test_informa_quando_nao_ha_clientes_cadastrados(self):
+        self.client.login(username="locadora", password="senha-teste")
+        self.cliente.delete()
+        response = self.client.get("/alugueis/novo/?carro=honda-civic")
+        self.assertContains(response, "Cadastre um cliente antes")
+        self.assertContains(response, "/clientes/")
 
 
 class TaxasAtrasoPageTest(TestCase):

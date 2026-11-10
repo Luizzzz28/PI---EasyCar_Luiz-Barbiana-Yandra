@@ -23,7 +23,13 @@ Feito com **Django** e **Django REST Framework**.
 
 **Carros disponíveis** (`/carros/`)
 - Catálogo demonstrativo de 20 modelos com foto local e diária de referência
+- Atalho para registrar o aluguel de um modelo escolhido para um cliente cadastrado
 - Créditos e licenças de cada imagem exibidos nos próprios cartões
+
+**Aluguéis**
+- Registro autenticado a partir do catálogo em `/alugueis/novo/`
+- Seleção de cliente cadastrado, modelo e quantidade de diárias
+- Valor da diária escolhido preservado no aluguel
 
 **Taxas de atraso** (`/taxas-atraso/`)
 - Tabela das faixas de atraso e dos valores de multa
@@ -42,9 +48,10 @@ Feito com **Django** e **Django REST Framework**.
 ## Tecnologias
 
 - Python 3
-- Django 5
+- Django
 - Django REST Framework
-- SQLite (banco padrão de desenvolvimento)
+- SQLite (banco padrão de desenvolvimento) ou PostgreSQL em produção
+- Gunicorn e WhiteNoise para hospedagem
 - HTML, CSS e JavaScript puros no dashboard
 
 ## Estrutura do projeto
@@ -71,6 +78,7 @@ locadora_django/
     │       ├── dashboard.html
     │       ├── clientes.html   # cadastro e consulta de clientes
     │       ├── carros.html     # catálogo de carros
+    │       ├── novo_aluguel.html # registro de aluguéis
     │       └── taxas_atraso.html # tabela e calculadora de multas
     ├── static/
     │   └── core/
@@ -98,7 +106,6 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # 3. Criar o banco de dados
-python manage.py makemigrations core
 python manage.py migrate
 
 # 4. Criar um usuário (necessário para usar a API)
@@ -117,6 +124,7 @@ Endereços:
 |---|---|
 | Dashboard | http://127.0.0.1:8000/ |
 | Carros disponíveis | http://127.0.0.1:8000/carros/ |
+| Registrar aluguel | http://127.0.0.1:8000/alugueis/novo/ |
 | Clientes | http://127.0.0.1:8000/clientes/ |
 | Tabela e calculadora de taxas | http://127.0.0.1:8000/taxas-atraso/ |
 | API navegável | http://127.0.0.1:8000/api/ |
@@ -200,14 +208,44 @@ CPF e telefone são dados pessoais. Neste projeto:
 - O `.gitignore` exclui o `db.sqlite3`, para o banco não ir para o repositório
 - O comando `seed` usa CPFs **fictícios** (válidos só matematicamente). Use-os em testes e apresentações
 
-Antes de uma publicação real, seria necessário: `DEBUG = False`, `ALLOWED_HOSTS` configurado, `SECRET_KEY` em variável de ambiente, HTTPS e um banco como PostgreSQL.
+## Publicar em um servidor
 
-## Próximos passos
+O projeto está configurado para executar em um servidor WSGI, servir arquivos estáticos com WhiteNoise e usar PostgreSQL por `DATABASE_URL`. Não use o servidor `runserver` em produção.
 
-- Formulário de cadastro de clientes no dashboard, consumindo a API
+Configure estas variáveis no provedor de hospedagem:
+
+| Variável | Exemplo/uso |
+|---|---|
+| `DJANGO_SECRET_KEY` | Chave aleatória e privada; gere com `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"` |
+| `DJANGO_DEBUG` | `False` |
+| `DJANGO_ALLOWED_HOSTS` | Domínios permitidos, separados por vírgula, sem `https://` |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Origens HTTPS do site, separadas por vírgula |
+| `DATABASE_URL` | URL de conexão PostgreSQL fornecida pelo provedor |
+| `DJANGO_USE_X_FORWARDED_PROTO` | `True` se o proxy HTTPS do provedor encaminhar `X-Forwarded-Proto` |
+
+Com as variáveis configuradas, execute durante a publicação:
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
+```
+
+Inicie o servidor de aplicação em Linux com:
+
+```bash
+gunicorn locadora.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+O `PORT` deve ser fornecido pelo provedor. Antes de abrir o site ao público, confirme que HTTPS está ativo, que o banco persistente foi configurado e que o usuário administrador tem uma senha forte. A senha local de demonstração `admin/admin` não deve ser usada em produção. Para validar as configurações de segurança depois de definir as variáveis do servidor, execute `python manage.py check --deploy`.
+
+O `check --deploy` pode recomendar HSTS para subdomínios e inclusão na lista de preload. Essas opções não são ativadas automaticamente: habilite-as somente depois de confirmar que todos os subdomínios também usam HTTPS e que deseja o comportamento permanente de preload.
+
+## Melhorias futuras
+
 - Autenticação por token (JWT)
 - Registro de devolução do veículo com cálculo automático das horas de atraso
-- Deploy em nuvem (Render ou PythonAnywhere)
 
 ## Autor
 

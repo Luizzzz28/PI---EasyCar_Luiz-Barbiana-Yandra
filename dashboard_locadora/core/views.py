@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
 
-from .forms import ClienteForm
+from .forms import AluguelCatalogoForm, ClienteForm
 from .catalogo import CARROS_DISPONIVEIS
 from .models import (
     LIMITE_FAIXA_HORA,
@@ -58,6 +58,54 @@ def dashboard(request):
 
 def carros_disponiveis(request):
     return render(request, "core/carros.html", {"carros": CARROS_DISPONIVEIS})
+
+
+@login_required(login_url="/api-auth/login/")
+def novo_aluguel(request):
+    slug_inicial = request.GET.get("carro", "")
+    carro_inicial = next(
+        (carro for carro in CARROS_DISPONIVEIS if carro["slug"] == slug_inicial),
+        None,
+    )
+    form = AluguelCatalogoForm(
+        request.POST if request.method == "POST" else None,
+        initial={"carro": carro_inicial["slug"]} if carro_inicial else None,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        carro = next(
+            item for item in CARROS_DISPONIVEIS
+            if item["slug"] == form.cleaned_data["carro"]
+        )
+        categoria, _ = Categoria.objects.get_or_create(
+            nome=carro["categoria"],
+            defaults={"diaria": carro["diaria"]},
+        )
+        Aluguel.objects.create(
+            cliente=form.cleaned_data["cliente"],
+            veiculo=carro["nome"],
+            categoria=categoria,
+            diarias=form.cleaned_data["diarias"],
+            diaria_contratada=carro["diaria"],
+        )
+        messages.success(
+            request,
+            f'Aluguel de {carro["nome"]} registrado com sucesso.',
+        )
+        return redirect("carros-disponiveis")
+
+    carro_selecionado = next(
+        (
+            carro for carro in CARROS_DISPONIVEIS
+            if carro["slug"] == form["carro"].value()
+        ),
+        None,
+    )
+    return render(request, "core/novo_aluguel.html", {
+        "form": form,
+        "carro_selecionado": carro_selecionado,
+        "tem_clientes": Cliente.objects.exists(),
+    })
 
 
 def taxas_atraso(request):
