@@ -46,7 +46,7 @@ def excluir_aluguel(aluguel):
 
 
 @transaction.atomic
-def registrar_multa(aluguel, funcionario, valor, descricao, data_infracao):
+def registrar_multa(aluguel, funcionario, valor, motivo, data_infracao):
     """Cria a multa e marca o aluguel como finalizado. O aluguel precisa estar ativo."""
     if aluguel.status != Aluguel.Status.ATIVO:
         raise RegraDeNegocio('Este aluguel já foi finalizado.')
@@ -54,7 +54,7 @@ def registrar_multa(aluguel, funcionario, valor, descricao, data_infracao):
         aluguel=aluguel,
         funcionario=funcionario,
         valor=valor,
-        descricao=descricao,
+        motivo=motivo,
         data_infracao=data_infracao,
     )
     aluguel.status = Aluguel.Status.FINALIZADO
