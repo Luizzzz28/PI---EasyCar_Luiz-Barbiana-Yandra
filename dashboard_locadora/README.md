@@ -1,4 +1,4 @@
-# 🚗 Dashboard e API da Locadora de Veículos
+#  Dashboard e API da Locadora de Veículos
 
 Projeto acadêmico de Desenvolvimento de Sistemas: um dashboard interativo para uma locadora de veículos, com os valores dos aluguéis e a tabela de taxas de atraso na entrega, mais uma API REST para cadastro de clientes.
 
