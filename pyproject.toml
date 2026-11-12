@@ -1,7 +1,7 @@
 [tool.ruff]
 line-length = 120
 target-version = "py313"
-extend-exclude = ["locadora/migrations"]
+extend-exclude = ["locadora/migrations", "dashboard_locadora"]
 
 [tool.ruff.format]
 quote-style = "single"
