@@ -65,16 +65,16 @@ class CarroTests(BaseApiTestCase):
         self.entrar(self.ana)
 
     def test_placa_e_normalizada(self):
-        resposta = self.client.post('/api/carros/', {'marca': 'Renault', 'modelo': 'Kwid', 'placa': 'jkl-9876', 'ano': 2021})
+        resposta = self.client.post('/api/carros/', {'modelo': ' Renault Kwid', 'placa': 'jkl-9876', 'ano': 2021})
         self.assertEqual(resposta.status_code, 201)
         self.assertEqual(resposta.json()['placa'], 'JKL9876')
 
     def test_placa_repetida_com_outra_grafia(self):
-        resposta = self.client.post('/api/carros/', {'marca': 'Chevrolet', 'modelo': 'Onix', 'placa': 'qwe-1234', 'ano': 2022})
+        resposta = self.client.post('/api/carros/', {'modelo': 'Chevrolet Onix', 'placa': 'qwe-1234', 'ano': 2022})
         self.assertEqual(resposta.status_code, 400)
 
     def test_placa_e_ano_invalidos(self):
-        resposta = self.client.post('/api/carros/', {'marca': 'Marca de teste', 'modelo': 'X', 'placa': '1234ABC', 'ano': 1900})
+        resposta = self.client.post('/api/carros/', {'modelo': 'X', 'placa': '1234ABC', 'ano': 1900})
         self.assertEqual(set(resposta.json()), {'placa', 'ano'})
 
     def test_status_alugado_nao_e_manual(self):

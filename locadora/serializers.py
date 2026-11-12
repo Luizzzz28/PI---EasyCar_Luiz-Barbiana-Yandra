@@ -87,7 +87,7 @@ class CarroSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Carro
-        fields = ['id', 'marca', 'modelo', 'placa', 'ano', 'status']
+        fields = ['id', 'modelo', 'placa', 'ano', 'status']
 
     def validate_placa(self, valor):
         placa = re.sub(r'[\s-]', '', valor).upper()

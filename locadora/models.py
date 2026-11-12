@@ -36,7 +36,6 @@ class Carro(models.Model):
         ALUGADO = 'alugado', 'Alugado'
         MANUTENCAO = 'manutencao', 'Em manutenção'
 
-    marca = models.CharField(max_length=50)
     modelo = models.CharField(max_length=100)
     placa = models.CharField(max_length=7, unique=True)
     ano = models.PositiveSmallIntegerField()

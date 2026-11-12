@@ -17,22 +17,22 @@ from locadora.permissions import GRUPO_CLIENTES, GRUPO_FUNCIONARIOS
 SENHA_DEMO = 'easycar-demo-2026'
 
 CARROS = [
-    ('Fiat', 'Argo', 'BRA2E19', 2023),
-    ('Chevrolet', 'Onix', 'QWE1234', 2022),
-    ('Hyundai', 'HB20', 'RTY5F67', 2024),
-    ('Renault', 'Kwid', 'JKL9876', 2021),
-    ('Volkswagen', 'Nivus', 'ASD4G56', 2023),
-    ('Toyota', 'Corolla', 'ZXC7V89', 2022),
-    ('Nissan', 'Kicks', 'RST3U67', 2022),
-    ('Honda', 'City', 'HJK1L23', 2024),
-    ('Jeep', 'Renegade', 'MNO2P45', 2023),
-    ('Peugeot', '208', 'VWX4Y89', 2025),
-    ('BYD', 'Dolphin', 'BCD5E12', 2025),
-    ('Toyota', 'Yaris', 'FGH6J78', 2023),
-    ('Chevrolet', 'Tracker', 'QAZ1S23', 2024),
-    ('Ford', 'EcoSport', 'WSX2D34', 2022),
-    ('Chevrolet', 'Zafira', 'EDC3F45', 2021),
-    ('Honda', 'City', 'FGH8J12', 2024),
+    ('Fiat Argo', 'BRA2E19', 2023),
+    ('Chevrolet Onix', 'QWE1234', 2022),
+    ('Hyundai HB20', 'RTY5F67', 2024),
+    ('Renault Kwid', 'JKL9876', 2021),
+    ('Volkswagen Nivus', 'ASD4G56', 2023),
+    ('Toyota Corolla', 'ZXC7V89', 2022),
+    ('Nissan Kicks', 'RST3U67', 2022),
+    ('Honda City', 'HJK1L23', 2024),
+    ('Jeep Renegade', 'MNO2P45', 2023),
+    ('Peugeot 208', 'VWX4Y89', 2025),
+    ('BYD Dolphin', 'BCD5E12', 2025),
+    ('Toyota Yaris', 'FGH6J78', 2023),
+    ('Chevrolet Tracker', 'QAZ1S23', 2024),
+    ('Ford EcoSport', 'WSX2D34', 2022),
+    ('Chevrolet Zafira', 'EDC3F45', 2021),
+    ('Honda City', 'FGH8J12', 2024),
 ]
 
 CLIENTES = [
@@ -60,8 +60,8 @@ class Command(BaseCommand):
             perfis.append(perfil)
 
         carros = [
-            Carro.objects.get_or_create(placa=placa, defaults={'marca': marca, 'modelo': modelo, 'ano': ano})[0]
-            for marca, modelo, placa, ano in CARROS
+            Carro.objects.get_or_create(placa=placa, defaults={'modelo': modelo, 'ano': ano})[0]
+            for modelo, placa, ano in CARROS
         ]
 
         if not Aluguel.objects.exists():
