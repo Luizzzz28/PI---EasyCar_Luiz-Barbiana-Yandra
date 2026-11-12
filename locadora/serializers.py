@@ -128,6 +128,10 @@ class AluguelSerializer(serializers.ModelSerializer):
             'data_inicio', 'data_fim', 'valor', 'status', 'data_devolucao',
         ]
         read_only_fields = ['status', 'data_devolucao']
+        # A regra "um aluguel ativo por carro" fica no services.py (responde 409);
+        # a UniqueConstraint do banco é só a última barreira. Sem isso o DRF
+        # criaria um validador automático e responderia 400.
+        validators = []
 
     def validate_carro(self, carro):
         if self.instance is not None and carro != self.instance.carro:
