@@ -58,15 +58,15 @@ O campo `chassi` é validado com 17 caracteres e é mostrado apenas para funcion
 
 ## Compartilhar a aplicação
 
-O arquivo [`render.yaml`](./render.yaml) publica o projeto da raiz no plano gratuito do serviço web do Render. Para não depender de um banco temporário no disco do serviço, configure um PostgreSQL externo persistente usando o plano gratuito disponível no provedor escolhido. O plano gratuito pode ter limites de conexões, armazenamento, inatividade ou mudanças de política; confira os termos atuais antes de usar dados reais.
+O arquivo [`render.yaml`](./render.yaml) configura um serviço web e um PostgreSQL gratuitos no Render. **O banco gratuito expira após 30 dias e seus dados são apagados**; use-o apenas para demonstração/testes. Para manter dados por mais tempo, migre para um plano pago ou outro provedor PostgreSQL persistente e atualize a referência de `DATABASE_URL`.
 
 1. Envie as alterações para o GitHub e conecte o repositório a um Blueprint no Render.
-2. Crie um banco PostgreSQL em um provedor compatível e copie sua URL de conexão com SSL.
-3. Ao configurar o Blueprint, informe essa URL na variável secreta `DATABASE_URL`; o Render gera `DJANGO_SECRET_KEY` e aplica as migrações ao iniciar o serviço.
+2. O Blueprint cria o PostgreSQL, conecta sua URL interna à variável `DATABASE_URL` e gera `DJANGO_SECRET_KEY`.
+3. As migrações são aplicadas ao iniciar o serviço.
 4. Como o plano gratuito não oferece Shell, crie o primeiro superusuário no seu computador, conectado ao banco de produção. No PowerShell, na raiz do projeto, defina `DATABASE_URL` e `DJANGO_SECRET_KEY` com os valores configurados no Render e execute `.\.venv\Scripts\python.exe manage.py createsuperuser`. Não salve esses valores no repositório.
 5. Compartilhe o endereço `https://...onrender.com` com a equipe. O painel e clientes exigem login; a frota e as taxas podem ser consultadas publicamente.
 
-O serviço web gratuito pode dormir quando não houver acesso e demorar para responder à primeira visita. O banco externo é independente do Render; os dados só persistem enquanto a conta e a cota do provedor estiverem ativas. Nenhum serviço é criado automaticamente: publicar exige conectar as contas e aceitar os termos do provedor.
+O serviço web gratuito pode dormir quando não houver acesso e demorar para responder à primeira visita. Confira os limites e a política de retenção do Render antes de cadastrar dados reais.
 
 ## Créditos
 

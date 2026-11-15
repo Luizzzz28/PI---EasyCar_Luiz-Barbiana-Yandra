@@ -21,4 +21,14 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: easycar-pi-postgres
+          property: connectionString
+
+databases:
+  - name: easycar-pi-postgres
+    databaseName: easycar
+    user: easycar
+    plan: free
+    region: ohio
+    postgresMajorVersion: "17"
