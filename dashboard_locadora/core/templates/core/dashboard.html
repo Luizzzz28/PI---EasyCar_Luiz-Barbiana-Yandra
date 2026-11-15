@@ -91,7 +91,7 @@
     </article>
     <article class="panel fleet-panel">
       <div class="fleet-art"><img src="{% static 'core/img/car-photo-fleet.jpg' %}" alt="Carro esportivo moderno" loading="lazy"></div>
-      <div class="fleet-copy"><span class="section-kicker">SUA FROTA</span><h2>Pronta para a próxima viagem?</h2><p>{{ carros_count }} veículo(s) cadastrado(s) na frota.</p><a class="inline-link" href="/carros/">Ver veículos <span aria-hidden="true">→</span></a></div>
+      <div class="fleet-copy"><span class="section-kicker">SUA FROTA</span><h2>Pronta para a próxima viagem?</h2><p>{{ carros_count }} veículo(s) real(is) · {{ carros_demo_count }} unidade(s) de demonstração.</p><a class="inline-link" href="/carros/">Ver veículos <span aria-hidden="true">→</span></a></div>
     </article>
   </section>
 
@@ -103,7 +103,7 @@
       {% for a in alugueis %}
       <tr>
         <td class="muted-cell">#{{ a.id }}</td><td class="customer-cell">{{ a.perfil_cliente.user.get_full_name|default:a.perfil_cliente.user.username }}</td><td>{{ a.carro.modelo }}</td>
-        <td><span class="tag">{{ a.get_status_display }}</span></td>
+        <td><span class="tag">{{ a.get_status_display }}{% if a.carro.eh_demonstracao %} · demonstração{% endif %}</span></td>
         <td>{{ a.data_inicio|date:"d/m/Y" }}</td>
         <td class="{% if a.atrasado %}late{% else %}ok{% endif %}">{{ a.data_fim|date:"d/m/Y" }}</td>
         <td class="r">R$ {{ a.valor|floatformat:"2g" }}</td>

@@ -44,13 +44,15 @@ class Carro(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))],
     )
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.DISPONIVEL)
+    eh_demonstracao = models.BooleanField('veículo de demonstração', default=False)
 
     class Meta:
         ordering = ['modelo', 'placa']
         indexes = [models.Index(fields=['status'], name='carro_status_idx')]
 
     def __str__(self):
-        return f'{self.modelo} ({self.placa})'
+        identificacao = f'{self.modelo} ({self.placa})'
+        return f'{identificacao} — demonstração' if self.eh_demonstracao else identificacao
 
 
 # Modelo de aluguel, que relaciona um perfil de cliente, um carro e um funcionário

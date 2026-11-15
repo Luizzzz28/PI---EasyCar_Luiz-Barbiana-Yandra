@@ -54,6 +54,8 @@ python manage.py runserver
 
 Use um superusuário ou adicione um usuário ao grupo `Funcionários` para acessar o painel, cadastrar clientes e veículos e registrar aluguéis. Para cadastrar um cliente, o painel cria um usuário no grupo `Clientes` e seu perfil no mesmo banco.
 
+Na primeira migração, são criadas até 20 unidades de demonstração, identificadas na frota e no painel; elas não são apresentadas como veículos reais pela API. Se já houver uma unidade real de um modelo, ela é priorizada na frota.
+
 O campo `chassi` é validado com 17 caracteres e é mostrado apenas para funcionários na API. Placa, ano, diária e status continuam compartilhados entre as páginas e os endpoints.
 
 ## Compartilhar a aplicação

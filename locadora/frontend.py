@@ -42,7 +42,13 @@ def _carro_para_tela(carro, dados_catalogo=None):
         diaria = dados_catalogo['diaria']
 
     credito_catalogo = dados_catalogo['credito'] if dados_catalogo else None
-    if carro and carro.diaria is not None:
+    status = carro.get_status_display() if carro else 'Modelo demonstrativo'
+    if carro and carro.eh_demonstracao:
+        status = f'{status} · demonstração'
+
+    if carro and carro.eh_demonstracao:
+        diaria_label = 'Diária de demonstração'
+    elif carro and carro.diaria is not None:
         diaria_label = 'Diária cadastrada'
     elif dados_catalogo:
         diaria_label = 'Diária de referência'
@@ -56,7 +62,7 @@ def _carro_para_tela(carro, dados_catalogo=None):
         ano=carro.ano if carro else None,
         placa=carro.placa if carro else '',
         categoria=dados_catalogo['categoria'] if dados_catalogo else '',
-        status=carro.get_status_display() if carro else 'Modelo demonstrativo',
+        status=status,
         diaria=diaria,
         diaria_label=diaria_label,
         taxa_hora=diaria * PERCENTUAL_MULTA if diaria is not None else None,
@@ -74,6 +80,7 @@ def _carro_para_tela(carro, dados_catalogo=None):
         ),
         eh_catalogo=dados_catalogo is not None,
         eh_frota=carro is not None,
+        eh_demonstracao=carro.eh_demonstracao if carro else False,
         alugavel=carro is not None and carro.status == Carro.Status.DISPONIVEL,
     )
 
@@ -84,17 +91,31 @@ def _carros_para_tela():
         for item in CARROS_DISPONIVEIS
     }
     carros_cadastrados = list(Carro.objects.order_by('modelo', 'placa'))
+    modelos_reais = {
+        slugify(carro.modelo)
+        for carro in carros_cadastrados
+        if not carro.eh_demonstracao
+    }
     carros = []
+    modelos_com_unidade = set()
 
     for carro in carros_cadastrados:
-        dados_catalogo = catalogo_por_nome.pop(slugify(carro.modelo), None)
+        modelo = slugify(carro.modelo)
+        if carro.eh_demonstracao and modelo in modelos_reais:
+            continue
+        dados_catalogo = catalogo_por_nome.get(modelo)
+        if dados_catalogo:
+            modelos_com_unidade.add(modelo)
         carros.append(_carro_para_tela(carro, dados_catalogo))
 
     carros.extend(
         _carro_para_tela(None, dados_catalogo)
-        for dados_catalogo in catalogo_por_nome.values()
+        for modelo, dados_catalogo in catalogo_por_nome.items()
+        if modelo not in modelos_com_unidade
     )
-    return carros, len(carros_cadastrados)
+    veiculos_reais = sum(not carro.eh_demonstracao for carro in carros if carro.eh_frota)
+    unidades_demo = sum(carro.eh_demonstracao for carro in carros)
+    return carros, veiculos_reais, unidades_demo
 
 
 class ClienteCadastroForm(forms.Form):
@@ -233,24 +254,40 @@ def dashboard(request):
         for aluguel in alugueis
     )
     por_categoria = []
-    for modelo in sorted({aluguel.carro.modelo for aluguel in alugueis}):
+    grupos_modelo = sorted({
+        (aluguel.carro.modelo, aluguel.carro.eh_demonstracao)
+        for aluguel in alugueis
+    })
+    for modelo, eh_demonstracao in grupos_modelo:
         valor = sum(
-            (aluguel.valor for aluguel in alugueis if aluguel.carro.modelo == modelo),
+            (
+                aluguel.valor
+                for aluguel in alugueis
+                if aluguel.carro.modelo == modelo
+                and aluguel.carro.eh_demonstracao == eh_demonstracao
+            ),
             Decimal('0'),
         )
-        por_categoria.append({'nome': modelo, 'valor': valor})
+        nome = f'{modelo} (demonstração)' if eh_demonstracao else modelo
+        por_categoria.append({'nome': nome, 'valor': valor})
     maximo = max((item['valor'] for item in por_categoria), default=Decimal('0')) or Decimal('1')
     for item in por_categoria:
         item['pct'] = int(item['valor'] / maximo * 100)
-    diarios = {
-        carro.modelo: float(carro.diaria)
-        for carro in carros
-        if carro.diaria is not None
-    }
+    diarios = {}
     tarifas_por_modelo = {}
-    for carro in carros:
+    for carro in sorted(carros, key=lambda item: item.eh_demonstracao):
         if carro.diaria is not None:
+            diarios.setdefault(carro.modelo, float(carro.diaria))
             tarifas_por_modelo.setdefault(carro.modelo, carro)
+    modelos_reais = {
+        slugify(carro.modelo)
+        for carro in carros
+        if not carro.eh_demonstracao
+    }
+    carros_demo_count = sum(
+        carro.eh_demonstracao and slugify(carro.modelo) not in modelos_reais
+        for carro in carros
+    )
     return render(request, 'core/dashboard.html', {
         'alugueis': alugueis,
         'categorias': [
@@ -271,16 +308,18 @@ def dashboard(request):
         'por_categoria': por_categoria,
         'diarias_json': diarios,
         'faixas_atraso': FAIXAS_ATRASO,
-        'carros_count': len(carros),
+        'carros_count': sum(not carro.eh_demonstracao for carro in carros),
+        'carros_demo_count': carros_demo_count,
     })
 
 
 def carros_disponiveis(request):
-    carros, veiculos_cadastrados = _carros_para_tela()
+    carros, veiculos_reais, unidades_demo = _carros_para_tela()
     return render(request, 'core/carros.html', {
         'carros': carros,
         'quantidade_modelos': len(CARROS_DISPONIVEIS),
-        'veiculos_cadastrados': veiculos_cadastrados,
+        'veiculos_reais': veiculos_reais,
+        'unidades_demo': unidades_demo,
         'is_funcionario': eh_funcionario(request.user),
     })
 
@@ -327,7 +366,7 @@ def novo_aluguel(request):
 
 
 def taxas_atraso(request):
-    carros, _ = _carros_para_tela()
+    carros, _, _ = _carros_para_tela()
     carros = [carro for carro in carros if carro.diaria is not None]
     return render(request, 'core/taxas_atraso.html', {
         'faixas_atraso': FAIXAS_ATRASO,

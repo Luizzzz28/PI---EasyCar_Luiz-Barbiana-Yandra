@@ -103,7 +103,7 @@ class CarroViewSet(ListaPaginadaMixin, ExclusaoProtegidaMixin, viewsets.ModelVie
     permission_classes = [FuncionarioEditaClienteConsulta]
 
     def get_queryset(self):
-        carros = Carro.objects.all()
+        carros = Carro.objects.filter(eh_demonstracao=False)
         status = self.request.query_params.get('status')  # /api/carros/?status=disponivel
         if status:
             carros = carros.filter(status=status)

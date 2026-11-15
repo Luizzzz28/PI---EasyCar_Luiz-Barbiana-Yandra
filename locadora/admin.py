@@ -26,8 +26,8 @@ class PerfilClienteAdmin(admin.ModelAdmin):
 #Registrar modelo de Carro
 @admin.register(Carro)
 class CarroAdmin(admin.ModelAdmin):
-    list_display = ['placa', 'modelo', 'ano', 'diaria', 'status']
-    list_filter = ['status']
+    list_display = ['placa', 'modelo', 'ano', 'diaria', 'status', 'eh_demonstracao']
+    list_filter = ['status', 'eh_demonstracao']
     search_fields = ['placa', 'chassi', 'modelo']
 
 

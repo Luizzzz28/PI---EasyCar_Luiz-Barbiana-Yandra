@@ -42,25 +42,27 @@
 
   <div class="cars-section-heading">
     <div><span class="section-kicker">CONFORTO, ESTILO E LIBERDADE</span><h2>Catálogo de carros</h2></div>
-    <span class="period-pill"><span class="live-dot"></span> {{ quantidade_modelos }} modelos · {{ veiculos_cadastrados }} unidades</span>
+    <span class="period-pill"><span class="live-dot"></span> {{ quantidade_modelos }} modelos · {{ unidades_demo }} demo · {{ veiculos_reais }} reais</span>
     {% if is_funcionario %}<a class="button button-blue" href="/carros/novo/">+ Cadastrar veículo</a>{% endif %}
   </div>
-  <p class="catalog-notice">O catálogo apresenta modelos ilustrativos, fotos creditadas e diárias de referência. A disponibilidade para aluguel depende de haver uma unidade cadastrada na frota.</p>
+  <p class="catalog-notice">As unidades marcadas como demonstração usam dados fictícios e servem para testar o fluxo de aluguel. Elas não representam veículos reais.</p>
 
   <section class="vehicle-grid" aria-label="Catálogo de modelos e veículos cadastrados">
     {% for carro in carros %}
     <article class="vehicle-card">
       <div class="vehicle-photo-wrap">
         <img class="vehicle-photo" src="{% static carro.imagem %}" alt="Foto do modelo {{ carro.nome }}" loading="lazy" width="760">
-        <span class="availability-badge{% if not carro.eh_frota %} demo{% endif %}"><span></span> {{ carro.status }}</span>
+        <span class="availability-badge{% if carro.eh_demonstracao or not carro.eh_frota %} demo{% endif %}"><span></span> {{ carro.status }}</span>
         {% if carro.categoria %}<span class="vehicle-category">{{ carro.categoria }}</span>{% endif %}
       </div>
       <div class="vehicle-info">
         <h3>{{ carro.nome }}</h3>
         {% if carro.ano %}<p>Ano: {{ carro.ano }}</p>{% endif %}
         <div class="vehicle-price"><span>{{ carro.diaria_label }}</span><strong>{% if carro.diaria %}R$ {{ carro.diaria|floatformat:"2g" }}{% else %}Consulte{% endif %}</strong></div>
-        {% if carro.alugavel %}
+        {% if carro.alugavel and is_funcionario %}
         <a class="button button-blue" href="{% url 'novo-aluguel' %}?carro={{ carro.slug }}">Alugar este carro</a>
+        {% elif carro.eh_demonstracao %}
+        <p class="vehicle-demo-note">Dados fictícios para demonstração; a equipe pode registrar um aluguel de teste.</p>
         {% elif not carro.eh_frota %}
         <p class="vehicle-demo-note">Modelo de referência; não representa uma unidade cadastrada.</p>
         {% endif %}
@@ -77,7 +79,7 @@
     {% endfor %}
   </section>
 
-  <p class="catalog-legal">Os modelos e as diárias de referência são demonstrativos. Apenas veículos cadastrados como unidades da frota podem ser alugados.</p>
+  <p class="catalog-legal">As unidades de demonstração têm placa, chassi, ano e diárias fictícios. Não use esses dados como informação de veículos reais.</p>
   <footer class="footer"><span>© Enterprise Aluguel de carros</span><span>Mobilidade para ir mais longe.</span></footer>
 </main>
 </body>

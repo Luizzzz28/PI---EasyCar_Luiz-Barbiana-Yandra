@@ -27,33 +27,47 @@ class DashboardIntegrationTests(TestCase):
         self.assertContains(response, 'Toyota Corolla')
         self.assertNotContains(response, 'ABC1D23')
         self.assertEqual(len(response.context['carros']), 20)
-        self.assertEqual(response.context['carros'][0].id, carro.pk)
-        self.assertEqual(response.context['carros'][0].diaria, Decimal('250.00'))
-        self.assertEqual(response.context['carros'][0].diaria_label, 'Diária cadastrada')
-        self.assertEqual(response.context['carros'][0].categoria, 'Sedã')
+        carro_tela = next(item for item in response.context['carros'] if item.id == carro.pk)
+        self.assertEqual(carro_tela.diaria, Decimal('250.00'))
+        self.assertEqual(carro_tela.diaria_label, 'Diária cadastrada')
+        self.assertEqual(carro_tela.categoria, 'Sedã')
         self.assertEqual(
             sum(item.nome == carro.modelo for item in response.context['carros']),
             1,
         )
-        self.assertTrue(response.context['carros'][0].alugavel)
+        self.assertTrue(carro_tela.alugavel)
+        self.assertEqual(response.context['veiculos_reais'], 1)
+        self.assertEqual(response.context['unidades_demo'], 19)
 
         dashboard = self.client.get('/')
         self.assertEqual(dashboard.status_code, 200)
         self.assertContains(dashboard, 'Enterprise Aluguel de carros')
         self.assertContains(dashboard, 'Toyota Corolla')
+        self.assertEqual(dashboard.context['carros_count'], 1)
+        self.assertEqual(dashboard.context['carros_demo_count'], 19)
         self.assertEqual(Carro.objects.get(pk=carro.pk).diaria, Decimal('250.00'))
 
-    def test_public_catalog_shows_all_models_rates_and_photo_credits(self):
+    def test_catalog_shows_demo_units_with_rent_action_and_photo_credits(self):
         response = self.client.get('/carros/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['carros']), 20)
         self.assertContains(response, 'Toyota Corolla')
         self.assertContains(response, 'R$ 249,00')
-        self.assertContains(response, 'Diária de referência')
-        self.assertContains(response, 'Modelo demonstrativo')
+        self.assertContains(response, 'Diária de demonstração')
+        self.assertContains(response, 'Disponível · demonstração')
+        self.assertContains(response, 'Alugar este carro')
         self.assertTrue(all(carro.credito.description_url for carro in response.context['carros']))
+        self.assertTrue(all(carro.eh_demonstracao for carro in response.context['carros']))
+
+    def test_rent_action_is_only_available_to_employees(self):
+        self.client.logout()
+
+        response = self.client.get('/carros/')
+
+        self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Alugar este carro')
+        self.assertContains(response, 'a equipe pode registrar um aluguel de teste')
 
     def test_non_catalogue_vehicle_is_kept_with_the_reference_models(self):
         carro = Carro.objects.create(
