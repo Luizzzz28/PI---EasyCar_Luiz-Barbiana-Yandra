@@ -60,10 +60,10 @@ O campo `chassi` é validado com 17 caracteres e é mostrado apenas para funcion
 
 O arquivo [`render.yaml`](./render.yaml) configura um serviço web e um PostgreSQL gratuitos no Render. **O banco gratuito expira após 30 dias e seus dados são apagados**; use-o apenas para demonstração/testes. Para manter dados por mais tempo, migre para um plano pago ou outro provedor PostgreSQL persistente e atualize a referência de `DATABASE_URL`.
 
-1. Envie as alterações para o GitHub e conecte o repositório a um Blueprint no Render.
+1. Envie as alterações para o GitHub e conecte o repositório a um Blueprint no Render. Se usar a URL pública do repositório, novos commits não iniciam deploy automaticamente; conecte o GitHub nas configurações do Render ou use **Manual Deploy**.
 2. O Blueprint cria o PostgreSQL, conecta sua URL interna à variável `DATABASE_URL` e gera `DJANGO_SECRET_KEY`.
 3. As migrações são aplicadas ao iniciar o serviço.
-4. Como o plano gratuito não oferece Shell, crie o primeiro superusuário no seu computador, conectado ao banco de produção. No PowerShell, na raiz do projeto, defina `DATABASE_URL` e `DJANGO_SECRET_KEY` com os valores configurados no Render e execute `.\.venv\Scripts\python.exe manage.py createsuperuser`. Não salve esses valores no repositório.
+4. Como o plano gratuito não oferece Shell, crie o primeiro superusuário no seu computador. Use a URL externa exibida em **Connect** no painel do banco (não a URL interna usada pelo serviço) e o `DJANGO_SECRET_KEY` exibido no serviço. No PowerShell, na raiz do projeto, defina `DATABASE_URL`, `DJANGO_SECRET_KEY`, `DB_ENGINE=postgres` e `DJANGO_DEBUG=false`, e execute `.\.venv\Scripts\python.exe manage.py createsuperuser`. Não salve esses valores no repositório.
 5. Compartilhe o endereço `https://...onrender.com` com a equipe. O painel e clientes exigem login; a frota e as taxas podem ser consultadas publicamente.
 
 O serviço web gratuito pode dormir quando não houver acesso e demorar para responder à primeira visita. Confira os limites e a política de retenção do Render antes de cadastrar dados reais.
