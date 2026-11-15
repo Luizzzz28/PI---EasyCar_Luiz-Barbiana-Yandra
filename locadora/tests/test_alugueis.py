@@ -64,6 +64,47 @@ class CarroTests(BaseApiTestCase):
     def setUp(self):
         self.entrar(self.ana)
 
+    def test_chassi_e_diaria_sao_salvos_e_exibidos_para_funcionario(self):
+        resposta = self.client.post('/api/carros/', {
+            'modelo': 'Renault Kwid',
+            'placa': 'jkl-9876',
+            'chassi': '1hgcm82633a004352',
+            'ano': 2021,
+            'diaria': '120.00',
+        })
+        self.assertEqual(resposta.status_code, 201)
+        self.assertEqual(resposta.json()['chassi'], '1HGCM82633A004352')
+        self.assertEqual(resposta.json()['diaria'], '120.00')
+
+    def test_chassi_invalido_e_repetido_sao_rejeitados(self):
+        dados = {
+            'modelo': 'Renault Kwid',
+            'placa': 'jkl-9876',
+            'chassi': '1HGCM82633A004352',
+            'ano': 2021,
+        }
+        self.assertEqual(self.client.post('/api/carros/', {**dados, 'chassi': '123'}).status_code, 400)
+        resposta = self.client.post('/api/carros/', dados)
+        self.assertEqual(resposta.status_code, 201)
+        resposta = self.client.post('/api/carros/', {
+            **dados,
+            'placa': 'XYZ1A23',
+        })
+        self.assertEqual(resposta.status_code, 400)
+
+    def test_cliente_nao_recebe_numero_do_chassi(self):
+        resposta = self.client.post('/api/carros/', {
+            'modelo': 'Renault Kwid',
+            'placa': 'jkl-9876',
+            'chassi': '1HGCM82633A004352',
+            'ano': 2021,
+        })
+        carro_id = resposta.json()['id']
+        self.entrar(self.bruno)
+        resposta = self.client.get(f'/api/carros/{carro_id}/')
+        self.assertEqual(resposta.status_code, 200)
+        self.assertNotIn('chassi', resposta.json())
+
     def test_placa_e_normalizada(self):
         resposta = self.client.post('/api/carros/', {'modelo': ' Renault Kwid', 'placa': 'jkl-9876', 'ano': 2021})
         self.assertEqual(resposta.status_code, 201)

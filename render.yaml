@@ -1,29 +1,19 @@
-databases:
-  - name: easycar-postgres
-    databaseName: easycar
-    user: easycar
-    plan: basic-1gb
-    region: ohio
-    postgresMajorVersion: "16"
-    storageGB: 1
-    ipAllowList: []
-
 services:
   - type: web
     name: easycar-aluguel-carros
     runtime: python
-    plan: starter
+    plan: free
     region: ohio
-    rootDir: dashboard_locadora
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate
-    startCommand: python -m gunicorn locadora.wsgi:application --bind 0.0.0.0:$PORT
-    healthCheckPath: /
+    startCommand: python manage.py migrate --noinput && python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /carros/
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.14
       - key: DJANGO_DEBUG
-        value: "false"
+        value: "0"
+      - key: DB_ENGINE
+        value: postgres
       - key: DJANGO_SECURE_SSL_REDIRECT
         value: "true"
       - key: DJANGO_USE_X_FORWARDED_PROTO
@@ -31,6 +21,4 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: easycar-postgres
-          property: connectionString
+        sync: false

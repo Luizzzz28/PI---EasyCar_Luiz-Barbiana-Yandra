@@ -35,39 +35,39 @@
     <div class="cars-hero-copy">
       <span class="eyebrow"><span class="eyebrow-dot"></span> NOSSA FROTA</span>
       <h1>Encontre o carro ideal para <span>sua jornada.</span></h1>
-      <p>Explore modelos, confira as diárias de referência e escolha seu próximo caminho.</p>
+      <p>Consulte os veículos cadastrados, suas tarifas e disponibilidade.</p>
     </div>
     <img src="{% static 'core/img/car-photo-fleet.jpg' %}" alt="" class="cars-hero-photo">
   </section>
 
   <div class="cars-section-heading">
     <div><span class="section-kicker">CONFORTO, ESTILO E LIBERDADE</span><h2>Carros disponíveis</h2></div>
-    <span class="period-pill"><span class="live-dot"></span> {{ carros|length }} modelos</span>
+    <span class="period-pill"><span class="live-dot"></span> {{ carros|length }} veículos</span>
+    {% if is_funcionario %}<a class="button button-blue" href="/carros/novo/">+ Cadastrar veículo</a>{% endif %}
   </div>
-  <p class="catalog-notice">Diárias de referência para demonstração. Consulte a disponibilidade e o valor final antes de reservar.</p>
+  <p class="catalog-notice">Veículos registrados no banco de dados da locadora. Consulte a disponibilidade e o valor final antes de reservar.</p>
 
   <section class="vehicle-grid" aria-label="Modelos de carros para aluguel">
     {% for carro in carros %}
     <article class="vehicle-card">
       <div class="vehicle-photo-wrap">
         <img class="vehicle-photo" src="{% static carro.imagem %}" alt="Foto do modelo {{ carro.nome }}" loading="lazy" width="760">
-        <span class="availability-badge"><span></span> Consulte disponibilidade</span>
+        <span class="availability-badge"><span></span> {{ carro.categoria }}</span>
         <span class="vehicle-category">{{ carro.categoria }}</span>
       </div>
       <div class="vehicle-info">
         <h3>{{ carro.nome }}</h3>
-        <div class="vehicle-price"><span>Diária a partir de</span><strong>R$ {{ carro.diaria|floatformat:"2g" }}</strong></div>
-        <a class="button button-blue" href="{% url 'novo-aluguel' %}?carro={{ carro.slug }}">Alugar este carro</a>
-        <div class="vehicle-credit">
-          Foto: <a href="{{ carro.credito.description_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.autor }}</a>
-          · <a href="{{ carro.credito.license_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.license }}</a>
-        </div>
+        <p>Ano: {{ carro.ano }}</p>
+        <div class="vehicle-price"><span>Diária</span><strong>{% if carro.diaria %}R$ {{ carro.diaria|floatformat:"2g" }}{% else %}Consulte{% endif %}</strong></div>
+        {% if carro.categoria == "Disponível" %}<a class="button button-blue" href="{% url 'novo-aluguel' %}?carro={{ carro.slug }}">Alugar este carro</a>{% endif %}
       </div>
     </article>
+    {% empty %}
+    <p class="empty-note">Ainda não há veículos cadastrados na frota.</p>
     {% endfor %}
   </section>
 
-  <p class="catalog-legal">As fotos são de referência e estão creditadas individualmente. Modelos, tarifas e disponibilidade são demonstrativos e podem ser ajustados em <code>core/catalogo.py</code>.</p>
+  <p class="catalog-legal">As fotos são ilustrativas. Dados do veículo e disponibilidade são consultados no banco de dados da locadora.</p>
   <footer class="footer"><span>© Aluguel de Carros Ltda.</span><span>Mobilidade para ir mais longe.</span></footer>
 </main>
 </body>

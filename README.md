@@ -27,45 +27,46 @@ docker compose up --build          # API + PostgreSQL, igual à produção
 Toda a documentação está na pasta [`docs/`](docs/README.md):
 Docker, banco de testes, banco de produção, CI/CD, padrões de código e pendências.
 
-## Dashboard da locadora
+## Dashboard integrado
 
-O dashboard e a API acadêmica da locadora estão no projeto independente [`dashboard_locadora/`](./dashboard_locadora/). Ele foi adicionado em uma pasta própria para preservar a API existente deste repositório, que permanece na raiz.
+O dashboard e a API usam o mesmo projeto Django, os modelos de [`locadora/models.py`](./locadora/models.py) e o mesmo banco configurado em `config/settings.py`. As páginas reaproveitam os templates e arquivos estáticos em `dashboard_locadora/core/`, mas não usam mais o banco isolado daquela pasta.
 
-Para executar no Windows:
+- Painel da equipe: `/` (login de funcionário)
+- Frota: `/carros/` (dados consultados no banco principal)
+- Cadastro de veículo: `/carros/novo/` (funcionários; inclui chassi, placa, ano e diária)
+- Clientes: `/clientes/` (funcionários; cria usuário e perfil com CNH, telefone e endereço)
+- Novo aluguel: `/alugueis/novo/` (registra pela camada de serviços da API e atualiza o status do carro)
+- Taxas: `/taxas-atraso/`
+- API e documentação: `/api/` e `/api/docs/`
+- Administração: `/admin/`
+
+Para executar no Windows, na raiz deste repositório:
 
 ```powershell
-cd dashboard_locadora
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+Copy-Item .env.example .env
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Endereços do dashboard:
+Use um superusuário ou adicione um usuário ao grupo `Funcionários` para acessar o painel, cadastrar clientes e veículos e registrar aluguéis. Para cadastrar um cliente, o painel cria um usuário no grupo `Clientes` e seu perfil no mesmo banco.
 
-- Painel: `http://127.0.0.1:8000/`
-- Carros disponíveis: `http://127.0.0.1:8000/carros/`
-- Cadastro de clientes: `http://127.0.0.1:8000/clientes/`
-- Tabela e calculadora de atraso: `http://127.0.0.1:8000/taxas-atraso/`
-- API REST do dashboard: `http://127.0.0.1:8000/api/`
+O campo `chassi` é validado com 17 caracteres e é mostrado apenas para funcionários na API. Placa, ano, diária e status continuam compartilhados entre as páginas e os endpoints.
 
-Consulte [`dashboard_locadora/README.md`](./dashboard_locadora/README.md) para detalhes de endpoints, validações e funcionamento.
+## Compartilhar a aplicação
 
-## Publicar no Render
+O arquivo [`render.yaml`](./render.yaml) publica o projeto da raiz no plano gratuito do serviço web do Render. Para não depender de um banco temporário no disco do serviço, configure um PostgreSQL externo persistente usando o plano gratuito disponível no provedor escolhido. O plano gratuito pode ter limites de conexões, armazenamento, inatividade ou mudanças de política; confira os termos atuais antes de usar dados reais.
 
-Este repositório inclui um Blueprint em [`render.yaml`](./render.yaml) para publicar o dashboard em `dashboard_locadora/` sem substituir a API que fica na raiz. O Blueprint provisiona o serviço web e um PostgreSQL no Ohio, na mesma região, e aplica migrações no deploy.
+1. Envie as alterações para o GitHub e conecte o repositório a um Blueprint no Render.
+2. Crie um banco PostgreSQL em um provedor compatível e copie sua URL de conexão com SSL.
+3. Ao configurar o Blueprint, informe essa URL na variável secreta `DATABASE_URL`; o Render gera `DJANGO_SECRET_KEY` e aplica as migrações ao iniciar o serviço.
+4. Como o plano gratuito não oferece Shell, crie o primeiro superusuário no seu computador, conectado ao banco de produção. No PowerShell, na raiz do projeto, defina `DATABASE_URL` e `DJANGO_SECRET_KEY` com os valores configurados no Render e execute `.\.venv\Scripts\python.exe manage.py createsuperuser`. Não salve esses valores no repositório.
+5. Compartilhe o endereço `https://...onrender.com` com a equipe. O painel e clientes exigem login; a frota e as taxas podem ser consultadas publicamente.
 
-1. Envie este repositório ao GitHub e acesse o [Render Dashboard](https://dashboard.render.com/).
-2. Crie um Blueprint e conecte este repositório, selecionando `render.yaml`.
-3. Revise e confirme o plano e a cobrança mostrados pelo Render. O Blueprint usa o plano pago `starter` para o serviço e `basic-1gb` para o PostgreSQL, pois os bancos gratuitos do Render expiram após 30 dias.
-4. Após o primeiro deploy, crie um usuário administrador pelo Shell do serviço: `cd dashboard_locadora && python manage.py createsuperuser`.
-5. O Render atribui um endereço `onrender.com` ao serviço e configura HTTPS. A aplicação aceita automaticamente esse hostname.
-
-O domínio `onrender.com` é o endereço público atribuído pelo provedor, não um domínio próprio registrado. Para usar um domínio comprado por você, adicione-o em **Settings > Custom Domains** no Render, configure os registros DNS indicados pelo painel e adicione o hostname a `DJANGO_ALLOWED_HOSTS` e a origem `https://seu-dominio` a `DJANGO_CSRF_TRUSTED_ORIGINS`.
-
-Nenhum serviço foi provisionado por este repositório; criar o Blueprint no Render requer uma conta e confirmação explícita dos custos.
+O serviço web gratuito pode dormir quando não houver acesso e demorar para responder à primeira visita. O banco externo é independente do Render; os dados só persistem enquanto a conta e a cota do provedor estiverem ativas. Nenhum serviço é criado automaticamente: publicar exige conectar as contas e aceitar os termos do provedor.
 
 ## Créditos
 

@@ -1,4 +1,17 @@
-#  Dashboard e API da Locadora de Veículos
+# Dashboard legado
+
+> **A versão integrada e atual está na raiz do repositório.** Execute `python manage.py`
+> a partir da raiz para usar as telas deste diretório com os modelos, a API e o banco
+> PostgreSQL/SQLite principais. Não execute o `manage.py` desta pasta para compartilhar
+> a aplicação: ele inicia o projeto standalone antigo com modelos e banco separados.
+
+Os templates e arquivos estáticos em `core/templates/` e `core/static/` são carregados
+pela aplicação principal. Consulte o [README da raiz](../README.md) para instruções de
+execução, rotas e publicação.
+
+---
+
+# Projeto standalone antigo
 
 Projeto acadêmico de Desenvolvimento de Sistemas: um dashboard interativo para uma locadora de veículos, com os valores dos aluguéis e a tabela de taxas de atraso na entrega, mais uma API REST para cadastro de clientes.
 

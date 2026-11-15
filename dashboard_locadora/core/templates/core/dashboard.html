@@ -49,9 +49,9 @@
   </div>
 
   <div class="filters" aria-label="Filtrar por categoria">
-    <a href="?" class="{% if not filtro %}on{% endif %}">Todas as categorias</a>
+    <a href="?" class="{% if not filtro %}on{% endif %}">Todos os modelos</a>
     {% for c in categorias %}
-      <a href="?categoria={{ c.nome|urlencode }}" class="{% if filtro == c.nome %}on{% endif %}">{{ c.nome }}</a>
+      <a href="?modelo={{ c.nome|urlencode }}" class="{% if filtro == c.nome %}on{% endif %}">{{ c.nome }}</a>
     {% endfor %}
   </div>
 
@@ -80,7 +80,7 @@
 
   <section class="content-grid">
     <article class="panel revenue-panel">
-      <div class="panel-heading"><div><span class="section-kicker">DESEMPENHO</span><h2>Receita por categoria</h2></div><span class="panel-badge">R$ BRL</span></div>
+      <div class="panel-heading"><div><span class="section-kicker">DESEMPENHO</span><h2>Receita por modelo</h2></div><span class="panel-badge">R$ BRL</span></div>
       <div class="bars">
       {% for p in por_categoria %}
         <div class="bar"><div class="bar-label"><span>{{ p.nome }}</span><strong>R$ {{ p.valor|floatformat:"2g" }}</strong></div><div class="track"><div class="fill" style="width:{{ p.pct }}%"></div></div></div>
@@ -91,26 +91,26 @@
     </article>
     <article class="panel fleet-panel">
       <div class="fleet-art"><img src="{% static 'core/img/car-photo-fleet.jpg' %}" alt="Carro esportivo moderno" loading="lazy"></div>
-      <div class="fleet-copy"><span class="section-kicker">SUA FROTA</span><h2>Pronta para a próxima viagem?</h2><p>Gerencie seus veículos e categorias em um só lugar.</p><a class="inline-link" href="/api/categorias/">Ver categorias <span aria-hidden="true">→</span></a></div>
+      <div class="fleet-copy"><span class="section-kicker">SUA FROTA</span><h2>Pronta para a próxima viagem?</h2><p>{{ carros_count }} veículo(s) cadastrado(s) na frota.</p><a class="inline-link" href="/carros/">Ver veículos <span aria-hidden="true">→</span></a></div>
     </article>
   </section>
 
   <section class="panel table-panel">
     <div class="panel-heading"><div><span class="section-kicker">ACOMPANHAMENTO</span><h2>Aluguéis recentes</h2></div><a class="inline-link" href="/api/alugueis/">Ver todos os aluguéis <span aria-hidden="true">→</span></a></div>
     <div class="sc"><table>
-      <thead><tr><th>Nº</th><th>Cliente</th><th>Veículo</th><th>Categoria</th><th class="r">Diárias</th><th class="r">Valor</th><th class="r">Atraso</th><th class="r">Multa</th></tr></thead>
+      <thead><tr><th>Nº</th><th>Cliente</th><th>Veículo</th><th>Status</th><th>Início</th><th>Devolução</th><th class="r">Valor</th><th class="r">Multa</th></tr></thead>
       <tbody>
       {% for a in alugueis %}
       <tr>
-        <td class="muted-cell">#{{ a.id }}</td><td class="customer-cell">{{ a.cliente.nome }}</td><td>{{ a.veiculo }}</td>
-        <td><span class="tag">{{ a.categoria.nome }}</span></td>
-        <td class="r">{{ a.diarias }}</td>
+        <td class="muted-cell">#{{ a.id }}</td><td class="customer-cell">{{ a.perfil_cliente.user.get_full_name|default:a.perfil_cliente.user.username }}</td><td>{{ a.carro.modelo }}</td>
+        <td><span class="tag">{{ a.get_status_display }}</span></td>
+        <td>{{ a.data_inicio|date:"d/m/Y" }}</td>
+        <td class="{% if a.atrasado %}late{% else %}ok{% endif %}">{{ a.data_fim|date:"d/m/Y" }}</td>
         <td class="r">R$ {{ a.valor|floatformat:"2g" }}</td>
-        <td class="r {% if a.horas_atraso > 1 %}late{% else %}ok{% endif %}">{% if a.horas_atraso > 0 %}{{ a.horas_atraso|floatformat:"-1" }}h{% else %}No prazo{% endif %}</td>
-        <td class="r {% if a.multa > 0 %}late{% endif %}">R$ {{ a.multa|floatformat:"2g" }}</td>
+        <td class="r {% if a.multa_total > 0 %}late{% endif %}">R$ {{ a.multa_total|floatformat:"2g" }}</td>
       </tr>
       {% empty %}
-      <tr><td class="empty-table" colspan="8">Nenhum aluguel cadastrado. Adicione um aluguel pela API ou pelo painel administrativo.</td></tr>
+      <tr><td class="empty-table" colspan="8">Nenhum aluguel cadastrado. Registre um aluguel pela frota ou pela API.</td></tr>
       {% endfor %}
       </tbody>
     </table></div>
@@ -125,7 +125,7 @@
         {% endfor %}
       </div>
       <div class="sc"><table class="rate-table">
-        <thead><tr><th>Categoria</th><th class="r">Diária</th><th class="r">Taxa/hora</th><th class="r">Multa/dia</th></tr></thead>
+        <thead><tr><th>Modelo</th><th class="r">Diária</th><th class="r">Taxa/hora</th><th class="r">Multa/dia</th></tr></thead>
         <tbody>
         {% for c in categorias %}
         <tr><td>{{ c.nome }}</td><td class="r">R$ {{ c.diaria|floatformat:"2g" }}</td><td class="r">R$ {{ c.taxa_hora|floatformat:"2g" }}</td><td class="r">R$ {{ c.multa_dia|floatformat:"2g" }}</td></tr>

@@ -37,7 +37,12 @@ class Carro(models.Model):
 
     modelo = models.CharField(max_length=100)
     placa = models.CharField(max_length=7, unique=True)
+    chassi = models.CharField('número do chassi', max_length=17, unique=True, null=True, blank=True)
     ano = models.PositiveSmallIntegerField()
+    diaria = models.DecimalField(
+        'valor da diária', max_digits=10, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal('0.01'))],
+    )
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.DISPONIVEL)
 
     class Meta:

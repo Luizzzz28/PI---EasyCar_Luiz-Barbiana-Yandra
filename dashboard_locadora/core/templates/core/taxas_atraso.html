@@ -82,7 +82,7 @@
   <article class="panel car-rates-panel">
     <div class="panel-heading"><div><span class="section-kicker">VALORES DO CATÁLOGO</span><h2>Diária e taxas por modelo</h2></div><a class="inline-link" href="/carros/">Ver fotos dos carros <span aria-hidden="true">→</span></a></div>
     <div class="sc"><table class="car-rates-table">
-      <thead><tr><th>Modelo</th><th>Categoria</th><th class="r">Diária</th><th class="r">10% por hora (1h a 3h)</th><th class="r">Multa por dia ou fração (&gt; 3h)</th></tr></thead>
+      <thead><tr><th>Modelo</th><th>Situação</th><th class="r">Diária</th><th class="r">10% por hora (1h a 3h)</th><th class="r">Multa por dia ou fração (&gt; 3h)</th></tr></thead>
       <tbody>
       {% for carro in carros %}
       <tr>
@@ -92,6 +92,8 @@
         <td class="r">R$ {{ carro.taxa_hora|floatformat:"2g" }}</td>
         <td class="r">R$ {{ carro.multa_dia|floatformat:"2g" }}</td>
       </tr>
+      {% empty %}
+      <tr><td class="empty-table" colspan="5">Cadastre veículos com valor de diária para visualizar as taxas.</td></tr>
       {% endfor %}
       </tbody>
     </table></div>

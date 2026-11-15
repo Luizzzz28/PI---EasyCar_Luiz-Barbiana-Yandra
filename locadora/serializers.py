@@ -11,7 +11,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from .models import Aluguel, Carro, PerfilCliente, Multa
-from .permissions import GRUPO_CLIENTES
+from .permissions import GRUPO_CLIENTES, eh_funcionario
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -84,10 +84,11 @@ class PerfilClienteSerializer(serializers.ModelSerializer):
 class CarroSerializer(serializers.ModelSerializer):
     # Aceita "abc-1234"; validate_placa grava "ABC1234" (7 caracteres, como no modelo)
     placa = serializers.CharField(max_length=10)
+    chassi = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Carro
-        fields = ['id', 'modelo', 'placa', 'ano', 'status']
+        fields = ['id', 'modelo', 'placa', 'chassi', 'ano', 'diaria', 'status']
 
     def validate_placa(self, valor):
         placa = re.sub(r'[\s-]', '', valor).upper()
@@ -106,6 +107,26 @@ class CarroSerializer(serializers.ModelSerializer):
         if not 1950 <= valor <= limite:
             raise serializers.ValidationError(f'O ano deve estar entre 1950 e {limite}.')
         return valor
+
+    def validate_chassi(self, valor):
+        chassi = re.sub(r'\s', '', valor or '').upper()
+        if not chassi:
+            return None
+        if not re.fullmatch(r'[A-HJ-NPR-Z0-9]{17}', chassi):
+            raise serializers.ValidationError('O chassi deve ter 17 caracteres e não pode conter I, O ou Q.')
+        repetidos = Carro.objects.filter(chassi=chassi)
+        if self.instance is not None:
+            repetidos = repetidos.exclude(pk=self.instance.pk)
+        if repetidos.exists():
+            raise serializers.ValidationError('Já existe um carro com este chassi.')
+        return chassi
+
+    def to_representation(self, instance):
+        representacao = super().to_representation(instance)
+        request = self.context.get('request')
+        if request is not None and not eh_funcionario(request.user):
+            representacao.pop('chassi', None)
+        return representacao
 
     def validate_status(self, valor):
         atual = self.instance.status if self.instance else None

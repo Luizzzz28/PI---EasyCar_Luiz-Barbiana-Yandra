@@ -39,7 +39,7 @@
   <section class="clients-layout">
     <article class="panel client-form-panel" id="novo-cliente">
       <div class="panel-heading"><div><span class="section-kicker">NOVO CADASTRO</span><h2>Adicionar cliente</h2></div><span class="client-form-icon" aria-hidden="true">+</span></div>
-      <p class="form-intro">Preencha os dados abaixo para adicionar um cliente à sua base.</p>
+      <p class="form-intro">O cadastro cria um usuário de cliente e seu perfil no banco principal da aplicação.</p>
       <form method="post" class="client-form" novalidate>
         {% csrf_token %}
         {% for field in form %}
@@ -61,8 +61,8 @@
     <article class="panel client-list-panel">
       <div class="panel-heading"><div><span class="section-kicker">BASE DE CLIENTES</span><h2>Clientes cadastrados</h2></div><span class="count-pill">{{ clientes|length }} cliente{{ clientes|length|pluralize:"s" }}</span></div>
       <form method="get" class="client-search">
-        <label class="sr-only" for="busca-clientes">Buscar por nome ou CPF</label>
-        <input id="busca-clientes" type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome ou CPF">
+        <label class="sr-only" for="busca-clientes">Buscar por nome, usuário ou CNH</label>
+        <input id="busca-clientes" type="search" name="q" value="{{ busca }}" placeholder="Buscar por nome, usuário ou CNH">
         <button class="search-button" type="submit">Buscar</button>
       </form>
       <div class="sc"><table class="clients-table">
