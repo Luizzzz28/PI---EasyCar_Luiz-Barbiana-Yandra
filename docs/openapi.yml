@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: API EasyCar
+  title: API Enterprise Aluguel de carros
   version: 1.0.0
   description: 'Aluguel de carros: clientes, carros, aluguéis e multas, com acesso
     por grupos.'

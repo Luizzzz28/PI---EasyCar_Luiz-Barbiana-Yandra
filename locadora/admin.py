@@ -6,6 +6,9 @@ from .models import Aluguel, Carro, PerfilCliente, Multa
 from .permissions import GRUPO_CLIENTES, GRUPO_FUNCIONARIOS
 
 # User, Group e Token já são registrados pelo Django e pelo DRF (rest_framework.authtoken)
+admin.site.site_header = 'Enterprise Aluguel de carros'
+admin.site.site_title = 'Enterprise Aluguel de carros | Administração'
+admin.site.index_title = 'Gestão da locadora'
 
 
 #Registrar modelo de PerfilCliente

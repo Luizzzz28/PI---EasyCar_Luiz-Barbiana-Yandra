@@ -187,7 +187,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'API EasyCar',
+    'TITLE': 'API Enterprise Aluguel de carros',
     'DESCRIPTION': 'Aluguel de carros: clientes, carros, aluguéis e multas, com acesso por grupos.',
     'VERSION': '1.0.0',
     # Carro e Aluguel têm um campo "status" com opções diferentes: um nome para cada

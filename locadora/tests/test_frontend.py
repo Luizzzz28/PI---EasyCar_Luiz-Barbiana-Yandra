@@ -31,6 +31,7 @@ class DashboardIntegrationTests(TestCase):
 
         dashboard = self.client.get('/')
         self.assertEqual(dashboard.status_code, 200)
+        self.assertContains(dashboard, 'Enterprise Aluguel de carros')
         self.assertContains(dashboard, 'Toyota Corolla')
         self.assertEqual(Carro.objects.get(pk=carro.pk).diaria, Decimal('250.00'))
 
@@ -94,3 +95,12 @@ class DashboardIntegrationTests(TestCase):
         visitante = User.objects.create_user('visitante', password='senha')
         self.client.force_login(visitante)
         self.assertEqual(self.client.get('/').status_code, 403)
+
+
+class AdminThemeTests(TestCase):
+    def test_admin_login_uses_enterprise_brand_and_styles(self):
+        response = self.client.get('/admin/login/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Enterprise Aluguel de carros')
+        self.assertContains(response, 'core/css/admin.css')

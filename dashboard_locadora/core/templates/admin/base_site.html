@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:"Enterprise Aluguel de carros" }}{% endblock %}
+
+{% block branding %}
+<a class="admin-brand" href="{% url 'admin:index' %}" aria-label="Enterprise Aluguel de carros - administração">
+  <span class="admin-brand-mark" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M3 13.5 5.1 8a2 2 0 0 1 1.8-1.2h10.2A2 2 0 0 1 19 8l2 5.5v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17H6v1.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M5 13h14M7 16h.01M17 16h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+  </span>
+  <span class="admin-brand-copy"><strong>Enterprise Aluguel de carros</strong><small>ADMINISTRAÇÃO</small></span>
+</a>
+{% endblock %}
+
+{% block nav-global %}
+<a class="admin-app-link" href="/">Voltar à aplicação <span aria-hidden="true">→</span></a>
+{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'core/css/admin.css' %}">
+{% endblock %}
+
+{% block footer %}<span>Enterprise Aluguel de carros · Gestão da locadora</span>{% endblock %}
