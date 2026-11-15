@@ -13,14 +13,16 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.text import slugify
 
+from dashboard_locadora.core.catalogo import CARROS_DISPONIVEIS, PERCENTUAL
 from . import services
 from .models import Aluguel, Carro, Multa, PerfilCliente
 from .permissions import GRUPO_CLIENTES, eh_funcionario
 
 TOLERANCIA_HORAS = Decimal('1')
 LIMITE_FAIXA_HORA = Decimal('3')
-PERCENTUAL_MULTA = Decimal('0.10')
+PERCENTUAL_MULTA = PERCENTUAL
 FAIXAS_ATRASO = (
     {'faixa': 'Até 1 hora', 'regra': 'Tolerância - sem cobrança'},
     {'faixa': 'De 1h até 3h', 'regra': '10% da diária por hora de atraso'},
@@ -34,25 +36,65 @@ def _somente_digitos(valor):
     return re.sub(r'\D', '', valor or '')
 
 
-def _carro_para_tela(carro):
+def _carro_para_tela(carro, dados_catalogo=None):
+    diaria = carro.diaria if carro else None
+    if diaria is None and dados_catalogo:
+        diaria = dados_catalogo['diaria']
+
+    credito_catalogo = dados_catalogo['credito'] if dados_catalogo else None
+    if carro and carro.diaria is not None:
+        diaria_label = 'Diária cadastrada'
+    elif dados_catalogo:
+        diaria_label = 'Diária de referência'
+    else:
+        diaria_label = 'Diária'
+
     return SimpleNamespace(
-        id=carro.pk,
-        slug=str(carro.pk),
-        nome=carro.modelo,
-        ano=carro.ano,
-        placa=carro.placa,
-        categoria=carro.get_status_display(),
-        diaria=carro.diaria,
-        taxa_hora=carro.diaria * PERCENTUAL_MULTA if carro.diaria else None,
-        multa_dia=carro.diaria * (1 + PERCENTUAL_MULTA) if carro.diaria else None,
-        imagem='core/img/car-photo-fleet.jpg',
+        id=carro.pk if carro else None,
+        slug=str(carro.pk) if carro else dados_catalogo['slug'],
+        nome=carro.modelo if carro else dados_catalogo['nome'],
+        ano=carro.ano if carro else None,
+        placa=carro.placa if carro else '',
+        categoria=dados_catalogo['categoria'] if dados_catalogo else '',
+        status=carro.get_status_display() if carro else 'Modelo demonstrativo',
+        diaria=diaria,
+        diaria_label=diaria_label,
+        taxa_hora=diaria * PERCENTUAL_MULTA if diaria is not None else None,
+        multa_dia=diaria * (1 + PERCENTUAL_MULTA) if diaria is not None else None,
+        imagem=dados_catalogo['imagem'] if dados_catalogo else 'core/img/car-photo-fleet.jpg',
         credito=SimpleNamespace(
-            description_url='',
-            autor='Imagem ilustrativa',
-            license='',
-            license_url='',
+            description_url=credito_catalogo['description_url'] if credito_catalogo else '',
+            autor=(
+                credito_catalogo.get('autor') or credito_catalogo.get('artist')
+                if credito_catalogo
+                else 'Imagem ilustrativa'
+            ),
+            license=credito_catalogo['license'] if credito_catalogo else '',
+            license_url=credito_catalogo['license_url'] if credito_catalogo else '',
         ),
+        eh_catalogo=dados_catalogo is not None,
+        eh_frota=carro is not None,
+        alugavel=carro is not None and carro.status == Carro.Status.DISPONIVEL,
     )
+
+
+def _carros_para_tela():
+    catalogo_por_nome = {
+        slugify(item['nome']): item
+        for item in CARROS_DISPONIVEIS
+    }
+    carros_cadastrados = list(Carro.objects.order_by('modelo', 'placa'))
+    carros = []
+
+    for carro in carros_cadastrados:
+        dados_catalogo = catalogo_por_nome.pop(slugify(carro.modelo), None)
+        carros.append(_carro_para_tela(carro, dados_catalogo))
+
+    carros.extend(
+        _carro_para_tela(None, dados_catalogo)
+        for dados_catalogo in catalogo_por_nome.values()
+    )
+    return carros, len(carros_cadastrados)
 
 
 class ClienteCadastroForm(forms.Form):
@@ -234,12 +276,11 @@ def dashboard(request):
 
 
 def carros_disponiveis(request):
-    carros = [
-        _carro_para_tela(carro)
-        for carro in Carro.objects.order_by('modelo', 'placa')
-    ]
+    carros, veiculos_cadastrados = _carros_para_tela()
     return render(request, 'core/carros.html', {
         'carros': carros,
+        'quantidade_modelos': len(CARROS_DISPONIVEIS),
+        'veiculos_cadastrados': veiculos_cadastrados,
         'is_funcionario': eh_funcionario(request.user),
     })
 
@@ -286,10 +327,8 @@ def novo_aluguel(request):
 
 
 def taxas_atraso(request):
-    carros = [
-        _carro_para_tela(carro)
-        for carro in Carro.objects.filter(diaria__isnull=False).order_by('modelo', 'placa')
-    ]
+    carros, _ = _carros_para_tela()
+    carros = [carro for carro in carros if carro.diaria is not None]
     return render(request, 'core/taxas_atraso.html', {
         'faixas_atraso': FAIXAS_ATRASO,
         'carros': carros,

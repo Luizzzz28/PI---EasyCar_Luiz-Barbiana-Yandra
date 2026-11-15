@@ -26,14 +26,59 @@ class DashboardIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Toyota Corolla')
         self.assertNotContains(response, 'ABC1D23')
+        self.assertEqual(len(response.context['carros']), 20)
         self.assertEqual(response.context['carros'][0].id, carro.pk)
         self.assertEqual(response.context['carros'][0].diaria, Decimal('250.00'))
+        self.assertEqual(response.context['carros'][0].diaria_label, 'Diária cadastrada')
+        self.assertEqual(response.context['carros'][0].categoria, 'Sedã')
+        self.assertEqual(
+            sum(item.nome == carro.modelo for item in response.context['carros']),
+            1,
+        )
+        self.assertTrue(response.context['carros'][0].alugavel)
 
         dashboard = self.client.get('/')
         self.assertEqual(dashboard.status_code, 200)
         self.assertContains(dashboard, 'Enterprise Aluguel de carros')
         self.assertContains(dashboard, 'Toyota Corolla')
         self.assertEqual(Carro.objects.get(pk=carro.pk).diaria, Decimal('250.00'))
+
+    def test_public_catalog_shows_all_models_rates_and_photo_credits(self):
+        response = self.client.get('/carros/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['carros']), 20)
+        self.assertContains(response, 'Toyota Corolla')
+        self.assertContains(response, 'R$ 249,00')
+        self.assertContains(response, 'Diária de referência')
+        self.assertContains(response, 'Modelo demonstrativo')
+        self.assertTrue(all(carro.credito.description_url for carro in response.context['carros']))
+        self.assertNotContains(response, 'Alugar este carro')
+
+    def test_non_catalogue_vehicle_is_kept_with_the_reference_models(self):
+        carro = Carro.objects.create(
+            modelo='Volvo XC40',
+            placa='XYZ1A23',
+            ano=2025,
+            diaria=Decimal('350.00'),
+        )
+
+        response = self.client.get('/carros/')
+
+        self.assertEqual(len(response.context['carros']), 21)
+        carro_tela = next(item for item in response.context['carros'] if item.id == carro.pk)
+        self.assertEqual(carro_tela.diaria, Decimal('350.00'))
+        self.assertEqual(carro_tela.status, 'Disponível')
+        self.assertTrue(carro_tela.alugavel)
+
+    def test_delay_rates_include_reference_catalog_models(self):
+        response = self.client.get('/taxas-atraso/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['carros']), 20)
+        self.assertContains(response, 'Toyota Corolla')
+        self.assertContains(response, 'R$ 24,90')
+        self.assertContains(response, 'R$ 273,90')
 
     def test_vehicle_form_saves_plate_chassis_and_daily_rate(self):
         response = self.client.post('/carros/novo/', {

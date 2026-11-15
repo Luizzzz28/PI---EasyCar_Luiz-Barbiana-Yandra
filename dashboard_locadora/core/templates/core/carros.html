@@ -35,31 +35,41 @@
     <div class="cars-hero-copy">
       <span class="eyebrow"><span class="eyebrow-dot"></span> NOSSA FROTA</span>
       <h1>Encontre o carro ideal para <span>sua jornada.</span></h1>
-      <p>Consulte os veículos cadastrados, suas tarifas e disponibilidade.</p>
+      <p>Confira os modelos do catálogo e os veículos cadastrados na frota.</p>
     </div>
     <img src="{% static 'core/img/car-photo-fleet.jpg' %}" alt="" class="cars-hero-photo">
   </section>
 
   <div class="cars-section-heading">
-    <div><span class="section-kicker">CONFORTO, ESTILO E LIBERDADE</span><h2>Carros disponíveis</h2></div>
-    <span class="period-pill"><span class="live-dot"></span> {{ carros|length }} veículos</span>
+    <div><span class="section-kicker">CONFORTO, ESTILO E LIBERDADE</span><h2>Catálogo de carros</h2></div>
+    <span class="period-pill"><span class="live-dot"></span> {{ quantidade_modelos }} modelos · {{ veiculos_cadastrados }} unidades</span>
     {% if is_funcionario %}<a class="button button-blue" href="/carros/novo/">+ Cadastrar veículo</a>{% endif %}
   </div>
-  <p class="catalog-notice">Veículos registrados no banco de dados da locadora. Consulte a disponibilidade e o valor final antes de reservar.</p>
+  <p class="catalog-notice">O catálogo apresenta modelos ilustrativos, fotos creditadas e diárias de referência. A disponibilidade para aluguel depende de haver uma unidade cadastrada na frota.</p>
 
-  <section class="vehicle-grid" aria-label="Modelos de carros para aluguel">
+  <section class="vehicle-grid" aria-label="Catálogo de modelos e veículos cadastrados">
     {% for carro in carros %}
     <article class="vehicle-card">
       <div class="vehicle-photo-wrap">
         <img class="vehicle-photo" src="{% static carro.imagem %}" alt="Foto do modelo {{ carro.nome }}" loading="lazy" width="760">
-        <span class="availability-badge"><span></span> {{ carro.categoria }}</span>
-        <span class="vehicle-category">{{ carro.categoria }}</span>
+        <span class="availability-badge{% if not carro.eh_frota %} demo{% endif %}"><span></span> {{ carro.status }}</span>
+        {% if carro.categoria %}<span class="vehicle-category">{{ carro.categoria }}</span>{% endif %}
       </div>
       <div class="vehicle-info">
         <h3>{{ carro.nome }}</h3>
-        <p>Ano: {{ carro.ano }}</p>
-        <div class="vehicle-price"><span>Diária</span><strong>{% if carro.diaria %}R$ {{ carro.diaria|floatformat:"2g" }}{% else %}Consulte{% endif %}</strong></div>
-        {% if carro.categoria == "Disponível" %}<a class="button button-blue" href="{% url 'novo-aluguel' %}?carro={{ carro.slug }}">Alugar este carro</a>{% endif %}
+        {% if carro.ano %}<p>Ano: {{ carro.ano }}</p>{% endif %}
+        <div class="vehicle-price"><span>{{ carro.diaria_label }}</span><strong>{% if carro.diaria %}R$ {{ carro.diaria|floatformat:"2g" }}{% else %}Consulte{% endif %}</strong></div>
+        {% if carro.alugavel %}
+        <a class="button button-blue" href="{% url 'novo-aluguel' %}?carro={{ carro.slug }}">Alugar este carro</a>
+        {% elif not carro.eh_frota %}
+        <p class="vehicle-demo-note">Modelo de referência; não representa uma unidade cadastrada.</p>
+        {% endif %}
+        {% if carro.credito.description_url %}
+        <div class="vehicle-credit">
+          Foto: <a href="{{ carro.credito.description_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.autor }}</a>
+          · <a href="{{ carro.credito.license_url }}" target="_blank" rel="noopener noreferrer">{{ carro.credito.license }}</a>
+        </div>
+        {% endif %}
       </div>
     </article>
     {% empty %}
@@ -67,7 +77,7 @@
     {% endfor %}
   </section>
 
-  <p class="catalog-legal">As fotos são ilustrativas. Dados do veículo e disponibilidade são consultados no banco de dados da locadora.</p>
+  <p class="catalog-legal">Os modelos e as diárias de referência são demonstrativos. Apenas veículos cadastrados como unidades da frota podem ser alugados.</p>
   <footer class="footer"><span>© Enterprise Aluguel de carros</span><span>Mobilidade para ir mais longe.</span></footer>
 </main>
 </body>

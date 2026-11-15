@@ -173,6 +173,7 @@ select:focus,input:focus{border-color:#82a2f3;box-shadow:0 0 0 3px rgba(50,104,2
 .vehicle-card:hover .vehicle-photo{transform:scale(1.045)}
 .availability-badge{position:absolute;top:10px;right:9px;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid rgba(255,255,255,.62);border-radius:20px;background:rgba(255,255,255,.94);color:#516178;font-size:8px;font-weight:700;box-shadow:0 2px 8px rgba(20,35,60,.09)}
 .availability-badge span{width:6px;height:6px;border-radius:50%;background:#32ad79}
+.availability-badge.demo span{background:#d59b38}
 .vehicle-category{position:absolute;bottom:9px;left:9px;padding:5px 8px;border:1px solid rgba(255,255,255,.65);border-radius:6px;background:rgba(16,26,48,.75);color:#fff;font-size:8px;font-weight:700;backdrop-filter:blur(5px)}
 .vehicle-info{padding:12px 13px 10px}
 .vehicle-info>.button{width:100%;justify-content:center;margin-bottom:8px;padding:8px;font-size:10px}
@@ -181,6 +182,7 @@ select:focus,input:focus{border-color:#82a2f3;box-shadow:0 0 0 3px rgba(50,104,2
 .vehicle-price span{color:#8b97a9;font-size:9px}
 .vehicle-price strong{color:#315fcb;font-size:15px;font-weight:800;white-space:nowrap}
 .vehicle-credit{min-height:27px;color:#98a2b1;font-size:8px;line-height:1.45}
+.vehicle-demo-note{min-height:27px;margin:0 0 8px;color:#8793a7;font-size:8px;line-height:1.45}
 .vehicle-credit a{color:#637898;text-decoration:underline;text-decoration-color:#c8d3e3;text-underline-offset:2px}
 .vehicle-credit a:hover{color:var(--blue)}
 .catalog-legal{margin:17px 0 0;color:#929dad;font-size:9px;line-height:1.6}

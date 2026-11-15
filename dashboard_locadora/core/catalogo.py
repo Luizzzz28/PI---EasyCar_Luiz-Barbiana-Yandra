@@ -2,7 +2,9 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
-from .models import LIMITE_FAIXA_HORA, PERCENTUAL, TOLERANCIA_HORAS
+TOLERANCIA_HORAS = Decimal("1")
+LIMITE_FAIXA_HORA = Decimal("3")
+PERCENTUAL = Decimal("0.10")
 
 
 _FOTOS_DIR = Path(__file__).resolve().parent / "static" / "core" / "img" / "cars"
