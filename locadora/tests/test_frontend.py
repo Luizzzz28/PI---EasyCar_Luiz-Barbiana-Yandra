@@ -133,6 +133,21 @@ class DashboardIntegrationTests(TestCase):
         carro.refresh_from_db()
         self.assertEqual(carro.status, Carro.Status.ALUGADO)
 
+    def test_rental_vehicle_choices_show_only_the_model_name(self):
+        cliente = User.objects.create_user('cliente_teste')
+        PerfilCliente.objects.create(
+            user=cliente,
+            cnh='12345678901',
+            telefone='61999990000',
+            endereco='Rua de teste, 1',
+        )
+        response = self.client.get('/alugueis/novo/')
+        carro = Carro.objects.get(modelo='Ford Mustang', eh_demonstracao=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'<option value="{carro.pk}">{carro.modelo}</option>', html=True)
+        self.assertNotContains(response, f'{carro.modelo} ({carro.placa})')
+
     def test_client_form_creates_root_user_and_profile(self):
         response = self.client.post('/clientes/', {
             'nome': 'Ana Souza',

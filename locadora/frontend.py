@@ -205,6 +205,7 @@ class AluguelCadastroForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['carro'].label_from_instance = lambda carro: carro.modelo
         self.fields['perfil_cliente'].queryset = PerfilCliente.objects.select_related('user').order_by(
             'user__first_name', 'user__username'
         )
