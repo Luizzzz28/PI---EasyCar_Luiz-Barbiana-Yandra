@@ -79,8 +79,8 @@ Docker empacota a aplicação e quais padrões de código seguimos.
 | [Banco de testes](#banco-de-testes-sqlite) | Banco de testes (SQLite), versões, como rodar e **o que cada teste verifica** |
 | [Banco de produção](#banco-de-produção-postgresql) | Banco de produção (PostgreSQL), modelo de dados, transações, backup |
 | [CI/CD](#cicd-github-actions) | Pipeline do GitHub Actions: lint → testes (SQLite + PostgreSQL) → imagem Docker |
-| [Padrões de codigo](#padrões-de-código) | Arquitetura em camadas, boas práticas do ORM, type hints, nomes, erros |
-| [Alteracoes da branch](#alterações-da-branch-featurebanco-de-dados) | O que mudou na branch `feature/banco-de-dados` e por quê |
+| [Padrões de código](#padrões-de-código) | Arquitetura em camadas, boas práticas do ORM, type hints, nomes, erros |
+| [Alterações da branch](#alterações-da-branch-featurebanco-de-dados) | O que mudou na branch `feature/banco-de-dados` e por quê |
 | [Pendências](#pendências) | O que ainda falta (do banco e de outras partes do projeto) |
 | [openapi.yml](docs/openapi.yml) | Especificação OpenAPI da API (gerada pelo drf-spectacular) |
 | [Referências](#referências-bibliográficas) | Referências bibliográficas de tudo que usamos no projeto |
@@ -316,7 +316,13 @@ O build e o compose foram testados localmente:
 > ⚠️ A senha do banco (`easycar`) e a `DJANGO_SECRET_KEY` (`troque-em-producao`) que estão
 > no `docker-compose.yml` servem **só para uso local**. Em produção, troque as duas e
 > defina-as como variáveis/segredos do servidor. Veja
-> [banco de produção](#variáveis-de-ambiente).
+> [banco de produção (variáveis de ambiente)](#variáveis-de-ambiente).
+
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
 
 # Banco de testes (SQLite)
 
@@ -520,6 +526,12 @@ from django.db import IntegrityError, transaction
 with pytest.raises(IntegrityError), transaction.atomic():
     Carro.objects.create(modelo='Uno', placa='ABC1D23', ano=2020)  # placa repetida
 ```
+
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
 
 # Banco de produção (PostgreSQL)
 
@@ -797,6 +809,12 @@ docker compose exec -T db pg_restore -U easycar -d easycar --clean < backup_2026
 - [ ] `python manage.py createsuperuser` para o primeiro admin
 - [ ] Grupos `Funcionários` e `Clientes` criados no admin
 
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
+
 # CI/CD (GitHub Actions)
 
 Arquivo: `.github/workflows/ci.yml`. Roda automaticamente:
@@ -882,6 +900,12 @@ docker build -t easycar .
 Em *Settings → Branches → Branch protection rules* para `main`:
 - exigir PR para fazer merge;
 - exigir que os jobs `lint`, `test (sqlite)`, `test (postgres)` e `docker` passem.
+
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
 
 # Padrões de código
 
@@ -1075,6 +1099,12 @@ flowchart LR
 - [ ] Testes para o código novo
 - [ ] Documentação em `docs/` atualizada se mudou comportamento
 
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
+
 # Alterações da branch `feature/banco-de-dados`
 
 Objetivo: preparar a camada de banco de dados com **SQLite para desenvolvimento/testes**
@@ -1155,7 +1185,7 @@ existia no model e quebrava o CI e o Swagger.
 
 ### `requirements.txt`
 Versões fixadas (`==`) em releases estáveis e adicionados `psycopg[binary]`,
-`gunicorn` e `whitenoise`. Tabela completa em [README](#versões-utilizadas).
+`gunicorn` e `whitenoise`. Tabela completa em [README (versões utilizadas)](#versões-utilizadas).
 
 ### Outros
 - `.gitignore`: `staticfiles/`, `.pytest_cache/`, `.coverage`, `htmlcov/`.
@@ -1183,7 +1213,7 @@ Versões fixadas (`==`) em releases estáveis e adicionados `psycopg[binary]`,
 - `views.py`, `admin.py`, `permissions.py`, `urls.py`: iguais ao original.
 - Migration `0001_initial`: intacta.
 - `.env.example`: mantido. As novas variáveis estão documentadas em
-  [Banco de produção](#variáveis-de-ambiente).
+  [banco de produção (variáveis de ambiente)](#variáveis-de-ambiente).
 
 ## Validação
 
@@ -1205,6 +1235,12 @@ Versões fixadas (`==`) em releases estáveis e adicionados `psycopg[binary]`,
 - Se o `db.sqlite3` local tiver **dois aluguéis ativos do mesmo carro** ou **multa com
   valor ≤ 0 / dias de atraso 0**, a migration `0002` falha. Corrija esses registros
   ou apague o `db.sqlite3` (é só de desenvolvimento) e rode `migrate` de novo.
+
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
 
 # Pendências
 
@@ -1229,6 +1265,12 @@ Versões fixadas (`==`) em releases estáveis e adicionados `psycopg[binary]`,
 | 6 | `views.py` (`AluguelViewSet.perform_destroy`) | Não trata `RegraDeNegocio` do `excluir_aluguel`. Excluir aluguel com multa dá 500; deveria dar 409 com `raise Conflito(str(erro))`, como nas outras ações | pendente |
 | 7 | `config/settings.py` | Depois do HTTPS: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT`, `SECURE_HSTS_SECONDS` | quando houver HTTPS |
 | 8 | Testes da API | Nenhuma view tinha teste (usar `APIClient` do DRF: 401/403/404/409) | ✅ resolvido: `test_alugueis.py`, `test_permissoes.py`, `test_relacionamentos.py` |
+
+<p align="right">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
 
 # Referências bibliográficas
 
@@ -1301,3 +1343,9 @@ Camada de banco de dados, Docker, CI/CD e documentação feitas com orientação
 ## Diagramas da documentação
 
 - MERMAID. **Mermaid: flowchart e entity relationship diagrams**. Disponível em: <https://mermaid.js.org/>. Acesso em: 12 nov. 2026.
+
+<p align="center">
+  <a href="#índice">
+    <img src="https://img.shields.io/badge/↑-Voltar_ao_índice-blue">
+  </a>
+</p>
