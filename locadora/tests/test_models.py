@@ -38,7 +38,8 @@ def test_carros_ordenados_por_modelo_e_placa():
     Carro.objects.create(modelo='Gol', placa='BBB2222', ano=2021)
     Carro.objects.create(modelo='Uno', placa='AAA1111', ano=2020)
     Carro.objects.create(modelo='Gol', placa='AAA0000', ano=2022)
-    assert list(Carro.objects.values_list('placa', flat=True)) == ['AAA0000', 'BBB2222', 'AAA1111']
+    placas = list(Carro.objects.filter(eh_demonstracao=False).values_list('placa', flat=True))
+    assert placas == ['AAA0000', 'BBB2222', 'AAA1111']
 
 
 def test_carro_com_aluguel_nao_pode_ser_excluido(carro, aluguel):
