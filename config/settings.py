@@ -137,7 +137,7 @@ elif DB_ENGINE == 'sqlite':
 else:
     raise RuntimeError(f'DB_ENGINE inválido: {DB_ENGINE!r} (use sqlite ou postgres).')
 
-if not DEBUG and DB_ENGINE == 'sqlite' and not DATABASE_URL:
+if not DEBUG and DB_ENGINE == 'sqlite' and not DATABASE_URL and not env_bool('DJANGO_ALLOW_SQLITE', False):
     raise RuntimeError('Configure DATABASE_URL com um PostgreSQL persistente para produção.')
 if not DEBUG and DB_ENGINE == 'postgres' and not DATABASE_URL and not os.getenv('POSTGRES_HOST'):
     raise RuntimeError('Configure DATABASE_URL ou POSTGRES_HOST para o banco PostgreSQL de produção.')

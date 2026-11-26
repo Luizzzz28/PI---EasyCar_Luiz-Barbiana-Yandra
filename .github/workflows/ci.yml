@@ -37,6 +37,8 @@ jobs:
     env:
       DJANGO_SECRET_KEY: ci-only
       DJANGO_DEBUG: '0'
+      DJANGO_ALLOW_SQLITE: '1'
+      DJANGO_SECURE_SSL_REDIRECT: '0'
       DB_ENGINE: ${{ matrix.db }}
       POSTGRES_DB: easycar
       POSTGRES_USER: easycar
