@@ -104,25 +104,42 @@ nos dois.
 
 ## Versões utilizadas
 
-Todas fixadas em `requirements.txt` / `requirements-dev.txt` (versões estáveis):
+Todas as dependências Python são fixadas em `requirements.txt` / `requirements-dev.txt` (versões estáveis). O frontend do painel usa **HTML5 + CSS3 + JavaScript puro (Vanilla JS)** sem Node.js/npm; já a interface navegável da API (`/api/`) utiliza **Bootstrap** e **jQuery** embutidos no Django REST Framework.
 
-| Tecnologia | Versão | Para quê |
-|---|---|---|
-| Python | 3.13 (Docker/CI) | Linguagem (também testado em 3.14) |
-| Django | 5.2.19 (LTS, suporte até abril/2028) | Framework web |
-| Django REST Framework | 3.18.3 | API REST |
-| drf-spectacular | 0.30.0 | Documentação OpenAPI/Swagger |
-| python-dotenv | 1.2.4 | Lê o arquivo `.env` |
-| psycopg (binary) | 3.3.8 | Driver do PostgreSQL |
-| gunicorn | 26.2.0 | Servidor de produção |
-| whitenoise | 6.12.0 | Serve arquivos estáticos (admin, Swagger) |
-| PostgreSQL | 17 (imagem `postgres:17-alpine`) | Banco de produção |
-| SQLite | embutido no Python | Banco de desenvolvimento/testes |
-| pytest / pytest-django / pytest-cov | 9.2.0 / 4.14.0 / 7.1.0 | Testes e cobertura |
-| ruff | 0.17.4 | Lint |
+| Camada | Tecnologia | Versão | Para quê |
+|---|---|---|---|
+| Backend | Python | 3.13 (Docker/CI) / 3.14 (local) | Linguagem principal |
+| Backend | Django | 5.2.19 (LTS, suporte até abril/2028) | Framework web, ORM, autenticação e admin |
+| API | Django REST Framework | 3.18.3 | API REST e interface navegável `/api/` |
+| API Docs | drf-spectacular | 0.30.0 | Documentação OpenAPI 3 / Swagger UI (`/api/docs/`) |
+| Config | python-dotenv | 1.2.4 | Lê o arquivo `.env` |
+| Banco (prod) | PostgreSQL | 17 (imagem `postgres:17-alpine`) | Banco relacional de produção |
+| Driver Banco | psycopg (binary) | 3.3.8 | Driver do PostgreSQL |
+| Banco (dev) | SQLite | embutido no Python | Banco de desenvolvimento e testes |
+| Servidor | gunicorn | 26.2.0 | Servidor WSGI de produção |
+| Estáticos | whitenoise | 6.12.0 | Serve arquivos estáticos (admin, Swagger, painel) sem nginx |
+| Frontend (painel) | HTML5 + CSS3 + JavaScript (Vanilla JS) + SVG | — | Templates e interatividade em `dashboard_locadora/core/` |
+| Frontend (API `/api/`) | Bootstrap + jQuery + Prettify | jQuery 3.7.1 (via DRF) | Interface navegável do Django REST Framework |
+| Testes | pytest / pytest-django / pytest-cov | 9.2.0 / 4.14.0 / 7.1.0 | Testes automatizados e cobertura |
+| Qualidade | ruff | 0.17.4 | Lint e padronização de código Python |
+| Infra / CI / Deploy | Docker / GitHub Actions / Render | — | Containerização, pipeline de CI e deploy |
 
 > Por que Django 5.2 e não 6.x? A 5.2 é **LTS** (Long Term Support): recebe correções
 > de segurança por mais tempo e todas as bibliotecas do projeto já a suportam.
+
+## Estrutura do projeto
+
+```text
+PI-EasyCar/
+├── config/                 # Configurações Django (settings.py, urls.py, wsgi.py)
+├── locadora/               # App principal: models, serializers, views, services e testes
+├── dashboard_locadora/     # Painel web integrado (templates HTML5, CSS3, Vanilla JS e SVG)
+├── docs/                   # Especificação OpenAPI (openapi.yml)
+├── .github/workflows/      # Pipeline CI (ci.yml: lint, testes SQLite/Postgres, Docker)
+├── Dockerfile              # Imagem de produção (Python 3.13 + Gunicorn + WhiteNoise)
+├── requirements.txt        # Dependências Python de produção
+└── requirements-dev.txt    # Dependências Python de desenvolvimento e testes
+```
 
 ## Começo rápido
 
