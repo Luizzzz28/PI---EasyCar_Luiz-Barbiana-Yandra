@@ -1273,7 +1273,8 @@ dashboard e deploy). Formato baseado na ABNT NBR 6023 para documentos online.
 ## Orientação e Créditos
 
 Projeto Integrador desenvolvido por Luiz, Barbiana e Yandra.
-Camada de banco de dados, Docker, CI/CD e documentação feitas com orientação e ajuda do **Prof. Henry**, Tech Lead da **Brassol Distribuidora**.
+Camada de banco de dados, Docker, CI/CD e documentação feitas com orientação e ajuda do **Prof. Wellyelton.Gualberto**, Tech Lead da IFB - FUTURO DIGITAL.
+
 
 ## Linguagem e framework
 
