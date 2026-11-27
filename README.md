@@ -740,7 +740,7 @@ sequenceDiagram
     F2->>PG: Carro.objects.select_for_update().get(pk=7)
     Note over F2,PG: F2 fica esperando a trava
     F1->>PG: Aluguel.objects.create(...)
-    F1->>PG: carro.status = 'alugado'; carro.save()
+    F1->>PG: carro.status = 'alugado', carro.save()
     F1->>PG: COMMIT (libera a trava)
     PG-->>F2: status = alugado
     F2->>F2: RegraDeNegocio → HTTP 409
