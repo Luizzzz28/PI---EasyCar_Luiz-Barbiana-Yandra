@@ -87,7 +87,7 @@ Docker empacota a aplicação e quais padrões de código seguimos.
 
 ## Visão geral
 
-```text
+```mermaid
 flowchart LR
     Cliente["Cliente HTTP<br/>(navegador, app, Postman)"] --> API["API Django + DRF<br/>views / serializers"]
     API --> Services["services.py<br/>regras de negócio + transações"]
@@ -165,7 +165,7 @@ Arquivos envolvidos:
 
 ## 1. Como a imagem é construída (`Dockerfile`)
 
-```text
+```mermaid
 flowchart TD
     A["FROM python:3.13-slim<br/>Linux mínimo + Python"] --> B["ENV ...<br/>configura o Python e o pip"]
     B --> C["WORKDIR /app"]
@@ -204,7 +204,7 @@ Copia **só** o `requirements.txt` primeiro e instala as dependências. Motivo: 
 guarda cada passo em *cache de camadas*. Enquanto o `requirements.txt` não mudar, o
 `pip install` (que é o passo demorado) não roda de novo, mesmo que o código mude.
 
-```text
+```mermaid
 flowchart LR
     subgraph BUILD["Build depois de mudar só o código"]
         R1["COPY requirements.txt<br/>✔ cache"] --> R2["pip install<br/>✔ cache (rápido)"] --> R3["COPY . .<br/>✘ refaz"]
@@ -248,7 +248,7 @@ Quando o container **sobe** (não no build):
 
 ## 2. API + banco juntos (`docker-compose.yml`)
 
-```text
+```mermaid
 flowchart LR
     Dev["Seu navegador<br/>localhost:8000"] -->|porta 8000| API
     subgraph REDE["Rede interna do compose"]
@@ -267,7 +267,7 @@ flowchart LR
 
 ### Sequência ao rodar `docker compose up --build`
 
-```text
+```mermaid
 sequenceDiagram
     participant Você
     participant Compose
@@ -352,7 +352,7 @@ python -c "import sqlite3; print(sqlite3.sqlite_version)"
 
 ## Como o banco de testes funciona
 
-```text
+```mermaid
 flowchart TD
     A["pytest"] --> B["pytest-django lê pytest.ini<br/>DJANGO_SETTINGS_MODULE=config.settings"]
     B --> C{"DB_ENGINE"}
@@ -386,7 +386,7 @@ Pontos importantes:
 | `dados_aluguel` | dicionário com cliente, carro, datas e valor (R$ 350,00) |
 | `aluguel` | aluguel **ativo** criado pelo service (o carro fica "alugado") |
 
-```text
+```mermaid
 sequenceDiagram
     participant P as pytest
     participant DB as Banco de teste
@@ -544,7 +544,7 @@ código usado com SQLite nos testes.
 
 Em `config/settings.py`:
 
-```text
+```mermaid
 flowchart TD
     A["settings.py lê DB_ENGINE"] --> B{"valor?"}
     B -->|"sqlite (padrão)"| C["django.db.backends.sqlite3<br/>arquivo SQLITE_PATH ou db.sqlite3"]
@@ -581,7 +581,7 @@ python -c "from django.core.management.utils import get_random_secret_key as k; 
 
 ## Como o ORM conversa com o banco
 
-```text
+```mermaid
 flowchart LR
     M["models.py<br/>(classes Python)"] -->|"makemigrations"| MG["migrations/000X_*.py<br/>(versão do esquema)"]
     MG -->|"migrate"| T[("Tabelas, constraints<br/>e índices no banco")]
@@ -610,7 +610,7 @@ DB_ENGINE=postgres python manage.py sqlmigrate locadora 0002
 
 ## Modelo de dados
 
-```text
+```mermaid
 erDiagram
     auth_user ||--o| locadora_perfilcliente : "tem perfil (1:1)"
     auth_user ||--o{ locadora_aluguel : "registra (funcionário)"
@@ -694,7 +694,7 @@ Relações:
 
 **Carro**
 
-```text
+```mermaid
 stateDiagram-v2
     direction LR
     [*] --> disponivel
@@ -706,7 +706,7 @@ stateDiagram-v2
 
 **Aluguel**
 
-```text
+```mermaid
 stateDiagram-v2
     direction LR
     [*] --> ativo: registrar_aluguel
@@ -715,7 +715,7 @@ stateDiagram-v2
 
 **Multa**
 
-```text
+```mermaid
 stateDiagram-v2
     direction LR
     [*] --> pendente: registrar_multa
@@ -733,7 +733,7 @@ passo falhar, os outros são desfeitos.
 As linhas envolvidas são travadas com `select_for_update()`. Quando dois
 funcionários tentam alugar o mesmo carro no mesmo instante:
 
-```text
+```mermaid
 sequenceDiagram
     participant F1 as Funcionário 1
     participant F2 as Funcionário 2
@@ -775,7 +775,7 @@ finalizar o aluguel, a segunda é recusada.
 
 ## Arquitetura de produção sugerida
 
-```text
+```mermaid
 flowchart LR
     U["Usuários"] -->|"HTTPS"| P["Proxy / HTTPS<br/>(da hospedagem ou nginx)"]
     P -->|"HTTP :8000"| A["Container da API<br/>gunicorn (3 workers)"]
@@ -828,7 +828,7 @@ Arquivo: `.github/workflows/ci.yml`. Roda automaticamente:
 
 ## Pipeline
 
-```text
+```mermaid
 flowchart LR
     T["push / pull request"] --> L["lint<br/>ruff check ."]
     L --> S["test (sqlite)<br/>check + migrations + pytest"]
@@ -866,7 +866,7 @@ Constrói a imagem com o `Dockerfile` (cache do GitHub Actions para ficar rápid
 
 ## Plano de testes por camada
 
-```text
+```mermaid
 flowchart TB
     subgraph HOJE["Hoje: 36 testes, SQLite + PostgreSQL"]
         R["Models<br/>constraints do banco"]
@@ -916,7 +916,7 @@ Em *Settings → Branches → Branch protection rules* para `main`:
 
 ## 1. Arquitetura em camadas
 
-```text
+```mermaid
 flowchart TD
     V["views.py<br/>recebe HTTP, checa permissão, responde"] --> S["serializers.py<br/>valida e formata JSON"]
     V --> SV["services.py<br/>regras de negócio + transação"]
@@ -1066,7 +1066,7 @@ mypy locadora/services.py
 
 ## 5. Erros
 
-```text
+```mermaid
 flowchart LR
     B["Banco / ORM<br/>IntegrityError, ProtectedError"] --> S["Service<br/>RegraDeNegocio('mensagem clara')"]
     S --> V["View<br/>Conflito → HTTP 409"]
@@ -1117,7 +1117,7 @@ e **PostgreSQL para produção**, usando o **ORM do Django**, mais Docker e CI.
 
 ## Resumo
 
-```text
+```mermaid
 flowchart LR
     subgraph ALT["Alterados"]
         A1["config/settings.py"]
