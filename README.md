@@ -692,30 +692,35 @@ Relações:
 
 ## Ciclo de vida dos status
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    state "Carro" as C {
-        [*] --> disponivel
-        disponivel --> alugado: registrar_aluguel
-        alugado --> disponivel: devolver_carro / registrar_multa
-        disponivel --> manutencao: edição pelo funcionário
-        manutencao --> disponivel: edição pelo funcionário
-    }
-```
+**Carro**
 
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "Aluguel" as A {
-        [*] --> ativo: registrar_aluguel
-        ativo --> finalizado: devolver_carro / registrar_multa
-    }
-    state "Multa" as M {
-        [*] --> pendente: registrar_multa
-        pendente --> pago
-        pendente --> abonado
-    }
+    [*] --> disponivel
+    disponivel --> alugado: registrar_aluguel
+    alugado --> disponivel: devolver_carro / registrar_multa
+    disponivel --> manutencao: edição pelo funcionário
+    manutencao --> disponivel: edição pelo funcionário
+```
+
+**Aluguel**
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> ativo: registrar_aluguel
+    ativo --> finalizado: devolver_carro / registrar_multa
+```
+
+**Multa**
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> pendente: registrar_multa
+    pendente --> pago
+    pendente --> abonado
 ```
 
 ## Transações e concorrência
